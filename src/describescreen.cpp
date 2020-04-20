@@ -5,6 +5,7 @@
 // Copyright 2008-2013 Jonathan Westhues.
 //-----------------------------------------------------------------------------
 #include "solvespace.h"
+#include "iteration.h"
 
 void TextWindow::ScreenUnselectAll(int link, uint32_t v) {
     GraphicsWindow::MenuEdit(Command::UNSELECT_ALL);
@@ -175,19 +176,18 @@ void TextWindow::DescribeSelection() {
                         e->str.c_str(), &ScreenEditTtfText, e->h.request().v);
                     Printf(true, "  select new font");
                     SS.fonts.LoadAll();
-                    // Not using range-for here because we use i inside the output.
-                    for(int i = 0; i < SS.fonts.l.n; i++) {
-                        TtfFont *tf = &(SS.fonts.l[i]);
+                    for (auto tf : indices(SS.fonts.l)) {
+                        bool parity = (tf.GetIndex() & 1);
                         if(e->font == tf->FontFileBaseName()) {
                             Printf(false, "%Bp    %s",
-                                (i & 1) ? 'd' : 'a',
+                                parity ? 'd' : 'a',
                                 tf->name.c_str());
                         } else {
                             Printf(false, "%Bp    %f%D%Fl%Ll%s%E%Bp",
-                                (i & 1) ? 'd' : 'a',
-                                &ScreenSetTtfFont, i,
+                                parity ? 'd' : 'a',
+                                &ScreenSetTtfFont, tf.GetIndex(),
                                 tf->name.c_str(),
-                                (i & 1) ? 'd' : 'a');
+                                parity ? 'd' : 'a');
                         }
                     }
                 } else {

@@ -8,6 +8,8 @@
 //-----------------------------------------------------------------------------
 #include "solvespace.h"
 
+#include "iteration.h"
+
 const hParam   Param::NO_PARAM = { 0 };
 #define NO_PARAM (Param::NO_PARAM)
 
@@ -422,7 +424,7 @@ void Group::Generate(IdList<Entity,hEntity> *entity,
     Vector gc = (SS.GW.offset).ScaledBy(-1);
     gn = gn.WithMagnitude(200/SS.GW.scale);
     gp = gp.WithMagnitude(200/SS.GW.scale);
-    int a, i;
+    int a;
     switch(type) {
         case Type::DRAWING_3D:
             return;
@@ -485,15 +487,15 @@ void Group::Generate(IdList<Entity,hEntity> *entity,
             // Get some arbitrary point in the sketch, that will be used
             // as a reference when defining top and bottom faces.
             hEntity pt = { 0 };
-            // Not using range-for here because we're changing the size of entity in the loop.
-            for(i = 0; i < entity->n; i++) {
-                Entity *e = &(entity->Get(i));
+
+            // Using "indices()" here because we're changing the size of entity in the loop.
+            for(auto e : indices(*entity)) {
                 if(e->group != opA) continue;
 
                 if(e->IsPoint()) pt = e->h;
 
                 e->CalculateNumerical(/*forExport=*/false);
-                hEntity he = e->h; e = NULL;
+                hEntity he = e->h;
                 // As soon as I call CopyEntity, e may become invalid! That
                 // adds entities, which may cause a realloc.
                 CopyEntity(entity, SK.GetEntity(he), ai, REMAP_BOTTOM,
@@ -519,16 +521,13 @@ void Group::Generate(IdList<Entity,hEntity> *entity,
             // Remapped entity index.
             int ai = 1;
 
-            // Not using range-for here because we're changing the size of entity in the loop.
-            for(i = 0; i < entity->n; i++) {
-                Entity *e = &(entity->Get(i));
+            // Using "indices()" here because we're changing the size of entity in the loop.
+            for(auto e : indices(*entity)) {
                 if(e->group != opA) continue;
 
                 e->CalculateNumerical(/*forExport=*/false);
                 hEntity he = e->h;
 
-                // As soon as I call CopyEntity, e may become invalid! That
-                // adds entities, which may cause a realloc.
                 CopyEntity(entity, SK.GetEntity(predef.origin), 0, ai,
                     NO_PARAM, NO_PARAM, NO_PARAM,
                     NO_PARAM, NO_PARAM, NO_PARAM, NO_PARAM, NO_PARAM,
@@ -568,9 +567,8 @@ void Group::Generate(IdList<Entity,hEntity> *entity,
 
             int ai = 1;
 
-            // Not using range-for here because we're changing the size of entity in the loop.
-            for(i = 0; i < entity->n; i++) {
-                Entity *e = &(entity->Get(i));
+            // Using "indices()" here because we're changing the size of entity in the loop.
+            for(auto e : indices(*entity)) {
                 if(e->group != opA)
                     continue;
 
@@ -582,15 +580,14 @@ void Group::Generate(IdList<Entity,hEntity> *entity,
 
                 for(a = 0; a < 2; a++) {
                     //! @todo is this check redundant?
-                    Entity *e = &(entity->Get(i));
                     if(e->group != opA)
                         continue;
 
                     e->CalculateNumerical(false);
-                    CopyEntity(entity, e, a * 2 - (subtype == Subtype::ONE_SIDED ? 0 : 1),
-                           (a == 1) ? REMAP_LATHE_END : REMAP_LATHE_START, h.param(0),
-                           h.param(1), h.param(2), h.param(3), h.param(4), h.param(5),
-                           h.param(6), NO_PARAM, CopyAs::N_ROT_AA);
+                    CopyEntity(entity, e.Get(), a * 2 - (subtype == Subtype::ONE_SIDED ? 0 : 1),
+                               (a == 1) ? REMAP_LATHE_END : REMAP_LATHE_START, h.param(0),
+                               h.param(1), h.param(2), h.param(3), h.param(4), h.param(5),
+                               h.param(6), NO_PARAM, CopyAs::N_ROT_AA);
                 }
                 // Arcs are not generated for revolve groups, for now, because our current arc
                 // entity is not chiral, and dragging a revolve may break the arc by inverting it.
@@ -602,7 +599,7 @@ void Group::Generate(IdList<Entity,hEntity> *entity,
             return;
         }
 
-        case Type::HELIX:   {
+        case Type::HELIX: {
             Vector axis_pos = SK.GetEntity(predef.origin)->PointGetNum();
             Vector axis_dir = SK.GetEntity(predef.entityB)->VectorGetNum();
 
@@ -620,10 +617,9 @@ void Group::Generate(IdList<Entity,hEntity> *entity,
 
             int ai = 1;
 
-            // Not using range-for here because we're changing the size of entity in the loop.
-            for(i = 0; i < entity->n; i++) {
-                Entity *e = &(entity->Get(i));
-                if((e->group.v != opA.v) && !(e->h == predef.origin))
+            // Using "indices()" here because we're changing the size of entity in the loop.
+            for(auto e : indices(*entity)) {
+                if((e->group != opA) && !(e->h == predef.origin))
                     continue;
 
                 e->CalculateNumerical(/*forExport=*/false);
@@ -632,15 +628,13 @@ void Group::Generate(IdList<Entity,hEntity> *entity,
                            NO_PARAM, NO_PARAM, NO_PARAM, NO_PARAM, NO_PARAM, NO_PARAM, CopyAs::NUMERIC);
 
                 for(a = 0; a < 2; a++) {
-                    Entity *e = &(entity->Get(i));
                     e->CalculateNumerical(false);
-                    CopyEntity(entity, e, a * 2 - (subtype == Subtype::ONE_SIDED ? 0 : 1),
+                    CopyEntity(entity, e.Get(), a * 2 - (subtype == Subtype::ONE_SIDED ? 0 : 1),
                                (a == 1) ? REMAP_LATHE_END : REMAP_LATHE_START, h.param(0),
                                h.param(1), h.param(2), h.param(3), h.param(4), h.param(5),
                                h.param(6), h.param(7), CopyAs::N_ROT_AXIS_TRANS);
                 }
                 // For point entities on the axis, create a construction line
-                e = &(entity->Get(i));
                 if(e->IsPoint()) {
                     Vector check = e->PointGetNum().Minus(axis_pos).Cross(axis_dir);
                     if (check.Dot(check) < LENGTH_EPS) {
@@ -678,13 +672,12 @@ void Group::Generate(IdList<Entity,hEntity> *entity,
             }
 
             for(a = a0; a < n; a++) {
-                // Not using range-for here because we're changing the size of entity in the loop.
-                for(i = 0; i < entity->n; i++) {
-                    Entity *e = &(entity->Get(i));
+                // Using "indices()" here because we're changing the size of entity in the loop.
+                for(auto e : indices(*entity)) {
                     if(e->group != opA) continue;
 
                     e->CalculateNumerical(/*forExport=*/false);
-                    CopyEntity(entity, e,
+                    CopyEntity(entity, e.Get(),
                         a*2 - (subtype == Subtype::ONE_SIDED ? 0 : (n-1)),
                         (a == (n - 1)) ? REMAP_LAST : a,
                         h.param(0), h.param(1), h.param(2),
@@ -714,13 +707,12 @@ void Group::Generate(IdList<Entity,hEntity> *entity,
             }
 
             for(a = a0; a < n; a++) {
-                // Not using range-for here because we're changing the size of entity in the loop.
-                for(i = 0; i < entity->n; i++) {
-                    Entity *e = &(entity->Get(i));
+                // Using "indices()" here because we're changing the size of entity in the loop.
+                for(auto e : indices(*entity)) {
                     if(e->group != opA) continue;
 
                     e->CalculateNumerical(/*forExport=*/false);
-                    CopyEntity(entity, e,
+                    CopyEntity(entity, e.Get(),
                         a*2 - (subtype == Subtype::ONE_SIDED ? 0 : (n-1)),
                         (a == (n - 1)) ? REMAP_LAST : a,
                         h.param(0), h.param(1), h.param(2),
@@ -741,10 +733,9 @@ void Group::Generate(IdList<Entity,hEntity> *entity,
             AddParam(param, h.param(5), 0);
             AddParam(param, h.param(6), 0);
 
-            // Not using range-for here because we're changing the size of entity in the loop.
-            for(i = 0; i < impEntity.n; i++) {
-                Entity *ie = &(impEntity[i]);
-                CopyEntity(entity, ie, 0, 0,
+            // Using "indices()" here because we're (possibly?) changing the size of entity in the loop.
+            for(auto ie : indices(impEntity)) {
+                CopyEntity(entity, ie.Get(), 0, 0,
                     h.param(0), h.param(1), h.param(2),
                     h.param(3), h.param(4), h.param(5), h.param(6), NO_PARAM,
                     CopyAs::N_ROT_TRANS);

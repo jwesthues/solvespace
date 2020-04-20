@@ -6,6 +6,7 @@
 // Copyright 2008-2013 Jonathan Westhues.
 //-----------------------------------------------------------------------------
 #include "solvespace.h"
+#include "iteration.h"
 
 void Group::AssembleLoops(bool *allClosed,
                           bool *allCoplanar,
@@ -236,18 +237,14 @@ void Group::GenerateShellAndMesh() {
             // And for any plane faces, annotate the model with the entity for
             // that face, so that the user can select them with the mouse.
             Vector onOrig = sbls->point;
-            int i;
-            // Not using range-for here because we're starting at a different place and using
-            // indices for meaning.
-            for(i = is; i < thisShell.surface.n; i++) {
-                SSurface *ss = &(thisShell.surface[i]);
+            for(auto ss : indices(thisShell.surface, is)) {
                 hEntity face = Entity::NO_ENTITY;
 
                 Vector p = ss->PointAt(0, 0),
                        n = ss->NormalAt(0, 0).WithMagnitude(1);
                 double d = n.Dot(p);
 
-                if(i == is || i == (is + 1)) {
+                if(ss.GetIndex() <= (is + 1)) {
                     // These are the top and bottom of the shell.
                     if(fabs((onOrig.Plus(ttop)).Dot(n) - d) < LENGTH_EPS) {
                         face = Remap(Entity::NO_ENTITY, REMAP_TOP);
