@@ -1,0 +1,82 @@
+<!doctype html>
+<html><!--
+ --><head><!--
+     --><meta charset="utf-8"><!--
+     --><title>SolveSpace Web Edition (EXPERIMENTAL)</title><!--
+     --><link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.1/css/all.css" integrity="sha384-O8whS3fhG2OnA5Kas0Y9l3cfpmYjapjI0E4theH4iuMD+pLhbf6JI0jIMfYcK3yZ" crossorigin="anonymous"><!--
+     --><link rel="stylesheet" href="solvespaceui.css"><!--
+     --><script src="solvespaceui.js"></script><!--
+ --></head><!--
+ --><body><!--
+     --><div id="splash">
+            <div class="center">
+                <div id="spinner"></div>
+                <div id="status">Downloading...</div>
+                <div id="crash" style="display:none;">
+                    SolveSpace has crashed. See console for details.<br>
+                    The Web Edition of SolveSpace is experimental,<br>
+                    and may not be as reliable as the Desktop Edition.<br>
+                    <a href="javascript:window.location.reload()">Restart</a>
+                </div>
+                <progress id="progress" value="0" max="100" hidden="1"></progress>
+            </div>
+        </div><!--
+        FIXME(emscripten): without this, a window resize is required in Chrome
+        to get the layout to update and canvas size to match up. What?
+     --><ul class="menu menubar" style="visibility: hidden"><li>None</li></ul><!--
+     --><div id="container"><!--
+         --><div id="container0"><canvas id="canvas0"></canvas></div><!--
+         --><div id="container1"><canvas id="canvas1"></canvas></div><!--
+     --></div><!--
+     --><script type="text/javascript">
+        var splashElement   = document.getElementById('splash');
+        var spinnerElement  = document.getElementById('spinner');
+        var statusElement   = document.getElementById('status');
+        var progressElement = document.getElementById('progress');
+        var crashElement    = document.getElementById('crash');
+        var canvas0Element  = document.getElementById('canvas0');
+        var canvas1Element  = document.getElementById('canvas1');
+
+        canvas0Element.oncontextmenu = function(event) { event.preventDefault(); }
+        canvas1Element.oncontextmenu = function(event) { event.preventDefault(); }
+
+        var Module = {
+            preRun: [],
+            postRun: [],
+            print: console.log,
+            printErr: console.error,
+            state: 'loading',
+            setStatus: function(text) {
+                if(this.state == 'crashed') {
+                    spinnerElement.style.display = 'none';
+                    statusElement.style.display = 'none';
+                    crashElement.style.display = '';
+                    splashElement.style.display = '';
+                } else if(text != '') {
+                    console.log('Status:', text);
+                    statusElement.innerText = text;
+                } else if(this.state != 'done') {
+                    console.log('Status: Done!');
+                    splashElement.style.display = 'none';
+                    this.state = 'done';
+                }
+            },
+            totalDependencies: 0,
+            monitorRunDependencies: function(remainingDependencies) {
+                this.totalDependencies = Math.max(this.totalDependencies, remainingDependencies);
+                if(remainingDependencies > 0) {
+                    var completeDependencies = this.totalDependencies - remainingDependencies;
+                    Module.setStatus('Preparing... (' + completeDependencies + '/' +
+                                     this.totalDependencies + ')');
+                }
+            }
+        };
+        Module.setStatus('Downloading...');
+        window.onerror = function() {
+            Module.state = 'crashed';
+            Module.setStatus();
+            return false;
+        };
+        </script><!--
+     -->{{{ SCRIPT }}}<!--
+ --></body></html>

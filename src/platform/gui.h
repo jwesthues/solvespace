@@ -220,6 +220,7 @@ public:
     std::function<bool(KeyboardEvent)>  onKeyboardEvent;
     std::function<void(std::string)>    onEditingDone;
     std::function<void(double)>         onScrollbarAdjusted;
+    std::function<void()>               onContextLost;
     std::function<void()>               onRender;
 
     virtual ~Window() = default;

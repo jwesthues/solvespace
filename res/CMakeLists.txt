@@ -1,6 +1,7 @@
 # First, set up registration functions for the kinds of resources we handle.
 set(resource_root ${CMAKE_CURRENT_SOURCE_DIR}/)
 set(resource_list)
+set(resource_names)
 if(WIN32)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/win32/versioninfo.rc.in
                    ${CMAKE_CURRENT_BINARY_DIR}/win32/versioninfo.rc)
@@ -83,6 +84,23 @@ elseif(APPLE)
             DEPENDS ${source}
             VERBATIM)
     endfunction()
+elseif(EMSCRIPTEN)
+    set(resource_dir ${CMAKE_BINARY_DIR}/src/res)
+
+    function(add_resource name)
+        set(source ${CMAKE_CURRENT_SOURCE_DIR}/${name})
+        set(target ${resource_dir}/${name})
+        set(resource_list  "${resource_list};${target}" PARENT_SCOPE)
+        set(resource_names "${resource_names};res/${name}" PARENT_SCOPE)
+
+        add_custom_command(
+            OUTPUT ${target}
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${resource_dir}
+            COMMAND ${CMAKE_COMMAND} -E copy ${source} ${target}
+            COMMENT "Copying resource ${name}"
+            DEPENDS ${source}
+            VERBATIM)
+    endfunction()
 else() # Unix
     include(GNUInstallDirs)
 
@@ -93,10 +111,9 @@ else() # Unix
         set(target ${app_resource_dir}/${name})
         set(resource_list "${resource_list};${target}" PARENT_SCOPE)
 
-        get_filename_component(target_dir ${target} DIRECTORY)
         add_custom_command(
             OUTPUT ${target}
-            COMMAND ${CMAKE_COMMAND} -E make_directory ${target_dir}
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${app_resource_dir}
             COMMAND ${CMAKE_COMMAND} -E copy ${source} ${target}
             COMMENT "Copying resource ${name}"
             DEPENDS ${source}
@@ -111,7 +128,8 @@ endif()
 function(add_resources)
     foreach(name ${ARGN})
         add_resource(${name})
-        set(resource_list "${resource_list}" PARENT_SCOPE)
+        set(resource_list  "${resource_list}" PARENT_SCOPE)
+        set(resource_names "${resource_names}" PARENT_SCOPE)
     endforeach()
 endfunction()
 
@@ -290,4 +308,6 @@ add_custom_target(resources
     DEPENDS ${resource_list})
 if(WIN32)
     set_property(TARGET resources PROPERTY EXTRA_SOURCES ${rc_file})
+elseif(EMSCRIPTEN)
+    set_property(TARGET resources PROPERTY NAMES ${resource_names})
 endif()

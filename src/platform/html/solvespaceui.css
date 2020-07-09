@@ -1,0 +1,277 @@
+* {
+    font-family: sans;
+}
+html, body {
+    padding: 0;
+    margin:  0;
+    background: black;
+    display: flex;
+    flex-direction: column;
+}
+html, body, canvas, #splash, #container {
+    margin:  0;
+    padding: 0;
+    width:   100%;
+    height:  100%;
+}
+body {
+    overflow: hidden;
+}
+
+/* Splashscreen */
+#splash {
+    z-index: 1000;
+    background: black;
+    color: white;
+    position: absolute;
+}
+#splash .center {
+    position: absolute;
+    top:  50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+#splash a {
+    color: white;
+}
+
+#spinner {
+    height: 30px;
+    width:  30px;
+    margin: 0px auto;
+    border-left:   10px solid rgb(255, 255, 255);
+    border-top:    10px solid rgb(0, 255, 0);
+    border-right:  10px solid rgb(255, 0, 255);
+    border-bottom: 10px solid rgb(0, 255, 0);
+    border-radius: 100%;
+    animation: rotation 3s linear infinite;
+    margin-bottom: 5px;
+}
+@keyframes rotation {
+    from  { transform: rotate(0deg);   }
+    to    { transform: rotate(360deg); }
+}
+
+/* Buttons */
+.button {
+    border: 1px solid hsl(0, 0%, 60%);
+    background: hsl(0, 0%, 10%);
+    color: white;
+    padding: 4px 8px;
+    cursor: default;
+}
+.button.selected {
+    background: hsl(0, 0%, 20%);
+}
+.button:hover {
+    background: hsl(0, 0%, 40%);
+}
+
+/* Editors */
+.editor {
+    position: absolute;
+    padding: 1px 0;
+    border: none;
+}
+
+/* Menus */
+.menu {
+    font-size: 0;
+    margin:  0;
+    padding: 0;
+    padding-right: 10px;
+    list-style-type: none;
+    background: hsl(0, 0%, 20%);
+    color: white;
+    cursor: default;
+
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+     user-select: none;
+}
+
+/* Normal menu items */
+.menu > li {
+    z-index: 100;
+    font-size: 16px;
+    display: inline-flex;
+    justify-content: space-between;
+    align-items: center;
+    white-space: nowrap;
+    position: relative;
+    width: 100%;
+    height: 19px;
+    margin: 2px;
+    padding: 3px;
+}
+.menu > li::before, .menu > li::after {
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    font-size: 12px;
+}
+.menu > li.hover,
+.menu > li.selected,
+.menu.menubar > li:hover:not(.selected) {
+    background: hsl(0, 0%, 30%);
+}
+.menu > li.disabled {
+    color: hsl(0, 0%, 30%);
+}
+
+/* Check and radio menu items */
+.menu > li {
+    padding-left: 24px;
+}
+.menu > li::before {
+    position: absolute;
+    text-align: center;
+    left: 0px;
+    width: 24px;
+}
+.menu > li.check::before {
+    content: '\f0c8';
+}
+.menu > li.check.active::before {
+    content: '\f14a';
+}
+.menu > li.radio::before {
+    content: '\f111';
+}
+.menu > li.radio.active::before {
+    content: '\f192';
+}
+
+/* Separator menu items */
+.menu > li.separator {
+    height: 0px;
+    border-top: 1px solid hsl(0, 0%, 30%);
+    margin: 0 2px 0 2px;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+/* Accelerators */
+.menu > li > .accel {
+    text-align: right;
+    margin-left: 20px;
+}
+
+/* Submenus */
+.menu > li > .menu,
+.menu.popup {
+    display: none;
+    white-space: normal;
+    padding-right: 31px;
+}
+.menu > li.has-submenu::after {
+    content: '\f0da';
+}
+.menu > li.selected > .menu,
+.menu > li.hover > .menu,
+.menu.popup {
+    display: block;
+    background: hsl(0, 0%, 10%);
+    border: 1px solid hsl(0, 0%, 30%);
+    position: absolute;
+    left: 100%;
+    top: -3px;
+}
+
+/* Popup menus */
+.menu.popup {
+    display: block;
+    position: absolute;
+    width: min-content;
+}
+
+/* Menubars */
+.menubar {
+    padding-left: 5px;
+}
+.menubar > li {
+    width: auto;
+    width: fit-content;
+    margin: 0;
+    padding: 5px;
+}
+.menubar > li.selected {
+    background: hsl(0, 0%, 10%);
+    border: 1px solid hsl(0, 0%, 30%);
+    padding: 4px;
+}
+.menubar.menu > li.selected > .menu {
+    display: block;
+    position: absolute;
+    left: -1px;
+    top: 27px;
+}
+
+/* Modal popups */
+.modal {
+    position: absolute;
+    left: 0;
+    top:  0;
+    width:  100%;
+    height: 100%;
+    background: hsla(0, 0%, 0%, 60%);
+}
+.modal > div {
+    position: absolute;
+    top:  15%;
+    left: 50%;
+    transform: translate(-50%, 0%);
+}
+
+/* Dialogs */
+.dialog {
+    border: 1px solid hsl(0, 0%, 30%);
+    background: hsl(0, 0%, 10%);
+    color: white;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    min-width: 200px;
+    max-width: 400px;
+    white-space: pre-wrap;
+}
+.dialog > .buttons {
+    display: flex;
+    justify-content: space-around;
+}
+
+/* Mnemonics */
+.label > u {
+    position: relative;
+    top: 0px;
+    text-decoration: none;
+}
+body.mnemonic .label > u {
+    border-bottom: 1px solid;
+}
+
+/* Canvases */
+canvas {
+    border: 0px none;
+    background-color: black;
+}
+
+#container {
+    display: flex;
+    height: 100%;
+}
+/* FIXME(emscripten): this should be dynamically adjustable, not hardcoded in CSS */
+#container0 {
+    flex-basis: 80%;
+    height: 100%;
+    position:  relative;
+}
+#container1 {
+    flex-basis: 20%;
+    height: 100%;
+    position:  relative;
+}
+#canvas1 {
+    min-width: 400px;
+}
