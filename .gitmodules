@@ -26,3 +26,6 @@
 [submodule "extlib/q3d"]
 	path = extlib/q3d
 	url = https://github.com/q3k/q3d
+[submodule "extlib/eigen"]
+	path = extlib/eigen
+	url = https://gitlab.com/libeigen/eigen.git

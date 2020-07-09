@@ -8,6 +8,8 @@
 //-----------------------------------------------------------------------------
 #include "solvespace.h"
 
+#include <Eigen/Core>
+
 // This tolerance is used to determine whether two (linearized) constraints
 // are linearly dependent. If this is too small, then we will attempt to
 // solve truly inconsistent systems and fail. But if it's too large, then
@@ -229,6 +231,21 @@ bool System::SolveLinearSystem(double X[], double A[][MAX_UNKNOWNS],
     return true;
 }
 
+using EiMat = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+using EiMatMap = Eigen::Map<EiMat, Eigen::Unaligned, Eigen::OuterStride<System::MAX_UNKNOWNS> >;
+using EiVec = Eigen::VectorXd;
+using EiVecMap = Eigen::Map<EiVec>;
+
+// Wrap a matrix of a given size (that's stored within a 2D matrix of MAX_UNKNOWNS by MAX_UNKNOWNS) for use with Eigen.
+inline EiMatMap mapMatrix(double mat[System::MAX_UNKNOWNS][System::MAX_UNKNOWNS], int rows, int cols) {
+    return EiMatMap(&(mat[0][0]), rows, cols);
+}
+
+// Wrap a vector of a given size (that's stored within a vector of MAX_UNKNOWNS length) for use with Eigen.
+inline EiVecMap mapVector(double vec[System::MAX_UNKNOWNS], int n){
+    return EiVecMap(&(vec[0]), n);
+}
+
 bool System::SolveLeastSquares() {
     int r, c, i;
 
@@ -249,15 +266,8 @@ bool System::SolveLeastSquares() {
     }
 
     // Write A*A'
-    for(r = 0; r < mat.m; r++) {
-        for(c = 0; c < mat.m; c++) {  // yes, AAt is square
-            double sum = 0;
-            for(i = 0; i < mat.n; i++) {
-                sum += mat.A.num[r][i]*mat.A.num[c][i];
-            }
-            mat.AAt[r][c] = sum;
-        }
-    }
+    auto A = mapMatrix(mat.A.num, mat.m, mat.n);
+    mapMatrix(mat.AAt, mat.m, mat.m) = A * A.transpose();
 
     if(!SolveLinearSystem(mat.Z, mat.AAt, mat.B.num, mat.m)) return false;
 

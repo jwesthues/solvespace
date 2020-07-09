@@ -4,6 +4,7 @@
 // Copyright 2008-2013 Jonathan Westhues.
 //-----------------------------------------------------------------------------
 #include "solvespace.h"
+#include "utileigen.h"
 
 Vector STriangle::Normal() const {
     Vector ab = b.Minus(a), bc = c.Minus(b);
@@ -11,9 +12,9 @@ Vector STriangle::Normal() const {
 }
 
 double STriangle::MinAltitude() const {
-    double altA = a.DistanceToLine(b, c.Minus(b)),
-           altB = b.DistanceToLine(c, a.Minus(c)),
-           altC = c.DistanceToLine(a, b.Minus(a));
+    double altA = DistanceToLineFromEndpoints(a, b, c),
+           altB = DistanceToLineFromEndpoints(b, c, a),
+           altC = DistanceToLineFromEndpoints(c, a, b);
 
     return min(altA, min(altB, altC));
 }

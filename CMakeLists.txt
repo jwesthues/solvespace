@@ -164,6 +164,10 @@ endif()
 message(STATUS "Using in-tree libdxfrw")
 add_subdirectory(extlib/libdxfrw)
 
+message(STATUS "Using in-tree Eigen")
+set(EIGEN3_FOUND             YES)
+set(EIGEN3_INCLUDE_DIRS      ${CMAKE_SOURCE_DIR}/extlib/eigen)
+
 message(STATUS "Using in-tree flatbuffers")
 set(FLATBUFFERS_BUILD_FLATLIB ON CACHE BOOL "")
 set(FLATBUFFERS_BUILD_FLATC ON CACHE BOOL "")
