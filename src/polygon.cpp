@@ -4,6 +4,7 @@
 // Copyright 2008-2013 Jonathan Westhues.
 //-----------------------------------------------------------------------------
 #include "solvespace.h"
+#include "../extlib/clipper/cpp/clipper.hpp"
 
 Vector STriangle::Normal() const {
     Vector ab = b.Minus(a), bc = c.Minus(b);
@@ -837,85 +838,25 @@ static bool IntersectionOfLines(double x0A, double y0A, double dxA, double dyA,
 
     return true;
 }
+
 void SContour::OffsetInto(SContour *dest, double r) const {
+    ClipperLib::ClipperOffset offset = ClipperLib::ClipperOffset(2.0, 0.25);
+    ClipperLib::Path path = {};
+
     int i;
-
     for(i = 0; i < l.n; i++) {
-        Vector a, b, c;
-        Vector dp, dn;
-        double thetan, thetap;
+        Vector point = l[i].p;
+        path.push_back(ClipperLib::IntPoint(point.x * 10000, point.y * 10000));
+    }
 
-        a = l[WRAP(i-1, (l.n-1))].p;
-        b = l[WRAP(i,   (l.n-1))].p;
-        c = l[WRAP(i+1, (l.n-1))].p;
-
-        dp = a.Minus(b);
-        thetap = atan2(dp.y, dp.x);
-
-        dn = b.Minus(c);
-        thetan = atan2(dn.y, dn.x);
-
-        // A short line segment in a badly-generated polygon might look
-        // okay but screw up our sense of direction.
-        if(dp.Magnitude() < LENGTH_EPS || dn.Magnitude() < LENGTH_EPS) {
-            continue;
-        }
-
-        if(thetan > thetap && (thetan - thetap) > PI) {
-            thetap += 2*PI;
-        }
-        if(thetan < thetap && (thetap - thetan) > PI) {
-            thetan += 2*PI;
-        }
-
-        if(fabs(thetan - thetap) < (1*PI)/180) {
-            Vector p = { b.x - r*sin(thetap), b.y + r*cos(thetap), 0 };
-            dest->AddPoint(p);
-        } else if(thetan < thetap) {
-            // This is an inside corner. We have two edges, Ep and En. Move
-            // out from their intersection by radius, normal to En, and
-            // then draw a line parallel to En. Move out from their
-            // intersection by radius, normal to Ep, and then draw a second
-            // line parallel to Ep. The point that we want to generate is
-            // the intersection of these two lines--it removes as much
-            // material as we can without removing any that we shouldn't.
-            double px0, py0, pdx, pdy;
-            double nx0, ny0, ndx, ndy;
-            double x = 0.0, y = 0.0;
-
-            px0 = b.x - r*sin(thetap);
-            py0 = b.y + r*cos(thetap);
-            pdx = cos(thetap);
-            pdy = sin(thetap);
-
-            nx0 = b.x - r*sin(thetan);
-            ny0 = b.y + r*cos(thetan);
-            ndx = cos(thetan);
-            ndy = sin(thetan);
-
-            IntersectionOfLines(px0, py0, pdx, pdy,
-                                nx0, ny0, ndx, ndy,
-                                &x, &y);
-
-            dest->AddPoint(Vector::From(x, y, 0));
-        } else {
-            if(fabs(thetap - thetan) < (6*PI)/180) {
-                Vector pp = { b.x - r*sin(thetap),
-                              b.y + r*cos(thetap), 0 };
-                dest->AddPoint(pp);
-
-                Vector pn = { b.x - r*sin(thetan),
-                              b.y + r*cos(thetan), 0 };
-                dest->AddPoint(pn);
-            } else {
-                double theta;
-                for(theta = thetap; theta <= thetan; theta += (6*PI)/180) {
-                    Vector p = { b.x - r*sin(theta),
-                                 b.y + r*cos(theta), 0 };
-                    dest->AddPoint(p);
-                }
-            }
+    offset.AddPath(path, ClipperLib::JoinType::jtMiter, ClipperLib::EndType::etOpenButt);
+    ClipperLib::Paths solution = {};
+    offset.Execute(solution, r);
+    for (ClipperLib::Paths::size_type i = 0; i < solution.size(); ++i) {
+        ClipperLib::Path path = solution[i];
+        for (ClipperLib::Path::size_type j = 0; j < solution[i].size(); j++) {
+            ClipperLib::IntPoint point = solution[i][j];
+            dest->AddPoint(Vector::From(point.X / 10000, point.Y / 10000, 0));
         }
     }
 }
-

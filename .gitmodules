@@ -26,3 +26,6 @@
 [submodule "extlib/q3d"]
 	path = extlib/q3d
 	url = https://github.com/q3k/q3d
+[submodule "extlib/clipper"]
+	path = extlib/clipper
+	url = https://github.com/reunanen/clipper-angus
