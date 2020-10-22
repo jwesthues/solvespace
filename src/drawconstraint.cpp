@@ -445,21 +445,37 @@ void Constraint::DoArcForAngle(Canvas *canvas, Canvas::hStroke hcs,
 }
 
 bool Constraint::IsVisible() const {
-    if(!SS.GW.showConstraints) return false;
-    Group *g = SK.GetGroup(group);
-    // If the group is hidden, then the constraints are hidden and not
-    // able to be selected.
-    if(!(g->visible)) return false;
-    // And likewise if the group is not the active group; except for comments
-    // with an assigned style.
-    if(g->h != SS.GW.activeGroup && !(type == Type::COMMENT && disp.style.v)) {
-        return false;
+    if(SS.GW.showConstraints == GraphicsWindow::ShowConstraintMode::SCM_NOSHOW ) return false;
+    bool isDim = false;
+    switch (type){
+    case ConstraintBase::Type::ANGLE:
+    case ConstraintBase::Type::DIAMETER:
+    case ConstraintBase::Type::PT_PT_DISTANCE:
+    case ConstraintBase::Type::PT_FACE_DISTANCE:
+    case ConstraintBase::Type::PT_LINE_DISTANCE:
+    case ConstraintBase::Type::PT_PLANE_DISTANCE:
+        isDim = true;
+        break;
+    default:;
     }
-    if(disp.style.v) {
-        Style *s = Style::Get(disp.style);
-        if(!s->visible) return false;
+
+    if(SS.GW.showConstraints == GraphicsWindow::ShowConstraintMode::SCM_SHOW_ALL || isDim ) {
+        Group *g = SK.GetGroup(group);
+        // If the group is hidden, then the constraints are hidden and not
+        // able to be selected.
+        if(!(g->visible)) return false;
+        // And likewise if the group is not the active group; except for comments
+        // with an assigned style.
+        if(g->h != SS.GW.activeGroup && !(type == Type::COMMENT && disp.style.v)) {
+            return false;
+        }
+        if(disp.style.v) {
+            Style *s = Style::Get(disp.style);
+            if(!s->visible) return false;
+        }
+        return true;
     }
-    return true;
+    return false;
 }
 
 bool Constraint::DoLineExtend(Canvas *canvas, Canvas::hStroke hcs,

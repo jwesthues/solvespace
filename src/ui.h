@@ -256,7 +256,6 @@ public:
     void ClearScreen();
 
     void Show();
-    void Resize();
 
     // State for the screen that we are showing in the text window.
     enum class Screen : uint32_t {
@@ -440,7 +439,6 @@ public:
     static void ScreenChangeShowContourAreas(int link, uint32_t v);
     static void ScreenChangeCheckClosedContour(int link, uint32_t v);
     static void ScreenChangeTurntableNav(int link, uint32_t v);
-    static void ScreenChangeImmediatelyEditDimension(int link, uint32_t v);
     static void ScreenChangeAutomaticLineConstraints(int link, uint32_t v);
     static void ScreenChangePwlCurves(int link, uint32_t v);
     static void ScreenChangeCanvasSizeAuto(int link, uint32_t v);
@@ -703,7 +701,6 @@ public:
     void RemoveConstraintsForPointBeingDeleted(hEntity hpt);
     void FixConstraintsForRequestBeingDeleted(hRequest hr);
     void FixConstraintsForPointBeingDeleted(hEntity hpt);
-    void EditConstraint(hConstraint constraint);
 
     // A selected entity.
     class Selection {
@@ -784,12 +781,13 @@ public:
     bool ToolbarMouseDown(int x, int y);
     Command toolbarHovered;
 
+    enum    class ShowConstraintMode{SCM_NOSHOW,SCM_SHOW_ALL,SCM_SHOW_DIM,};
     // This sets what gets displayed.
     bool    showWorkplanes;
     bool    showNormals;
     bool    showPoints;
     bool    showConstruction;
-    bool    showConstraints;
+    ShowConstraintMode    showConstraints;
     bool    showTextWindow;
     bool    showShaded;
     bool    showEdges;

@@ -228,7 +228,7 @@ void SolveSpaceUI::ExportViewOrWireframeTo(const Platform::Path &filename, bool 
         }
     }
 
-    if(SS.GW.showConstraints) {
+    if(SS.GW.showConstraints != GraphicsWindow::ShowConstraintMode::SCM_NOSHOW ) {
         if(!out->OutputConstraints(&SK.constraint)) {
             GetEdgesCanvas canvas = {};
             canvas.camera = SS.GW.GetCamera();

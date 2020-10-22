@@ -396,7 +396,7 @@ void GraphicsWindow::Init() {
     showNormals = true;
     showPoints = true;
     showConstruction = true;
-    showConstraints = true;
+    showConstraints = GraphicsWindow::ShowConstraintMode::SCM_SHOW_ALL;
     showShaded = true;
     showEdges = true;
     showMesh = false;
