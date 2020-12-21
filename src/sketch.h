@@ -790,6 +790,7 @@ public:
     static hConstraint TryConstrain(Constraint::Type type, hEntity ptA, hEntity ptB,
                                     hEntity entityA, hEntity entityB = Entity::NO_ENTITY,
                                     bool other = false, bool other2 = false);
+
 };
 
 class hEquation {

@@ -62,6 +62,10 @@ static ToolIcon Toolbar[] = {
       N_("Other supplementary angle"),                        {} },
     { "ref",             Command::REFERENCE,
       N_("Toggle reference dimension"),                       {} },
+
+    { "ref",             Command::SELECT_ON,
+      N_("Constrain Coincident Point by selection"),                       {} },
+
     { "",                Command::NONE, "",                   {} },
 
     { "extrude",         Command::GROUP_EXTRUDE,

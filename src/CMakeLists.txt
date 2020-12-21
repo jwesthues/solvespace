@@ -32,7 +32,7 @@ set(libslvs_SOURCES
     util.cpp
     entity.cpp
     expr.cpp
-    constraint.cpp
+    constraintdesc.cpp
     constrainteq.cpp
     system.cpp
     platform/platform.cpp)
@@ -48,7 +48,9 @@ add_library(slvs SHARED
     lib.cpp)
 
 target_compile_definitions(slvs
-    PRIVATE -DLIBRARY)
+    PRIVATE
+        -DLIBRARY
+        )
 
 target_include_directories(slvs
     PUBLIC ${CMAKE_SOURCE_DIR}/include)
@@ -158,6 +160,7 @@ set(solvespace_core_SOURCES
     clipboard.cpp
     confscreen.cpp
     constraint.cpp
+    constraintdesc.cpp
     constrainteq.cpp
     describescreen.cpp
     draw.cpp
@@ -202,7 +205,7 @@ set(solvespace_core_SOURCES
     srf/raycast.cpp
     srf/surface.cpp
     srf/surfinter.cpp
-    srf/triangulate.cpp)
+    srf/triangulate.cpp constraintmenu.h constraintmenu.cpp)
 
 set(solvespace_core_gl_SOURCES
     solvespace.cpp)

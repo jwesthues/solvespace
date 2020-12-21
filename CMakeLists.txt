@@ -396,3 +396,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebI
 else()
     message(STATUS "Benchmarking disabled in debug builds.")
 endif()
+
+# Dump project structure for static analysis
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+

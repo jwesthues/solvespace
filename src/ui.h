@@ -8,6 +8,9 @@
 #ifndef SOLVESPACE_UI_H
 #define SOLVESPACE_UI_H
 
+#include <stdint.h>
+#include <string>
+
 class Locale {
 public:
     std::string language;
@@ -36,6 +39,7 @@ const std::string &Translate(const char *msgctxt, const char *msgid);
 const std::string &TranslatePlural(const char *msgid, unsigned n);
 const std::string &TranslatePlural(const char *msgctxt, const char *msgid, unsigned n);
 
+// Translation support
 inline const char *N_(const char *msgid) {
     return msgid;
 }
@@ -155,6 +159,7 @@ enum class Command : uint32_t {
     ORIENTED_SAME,
     WHERE_DRAGGED,
     COMMENT,
+    SELECT_ON,
     // Analyze
     VOLUME,
     AREA,
@@ -736,13 +741,15 @@ public:
     bool hoverWasSelectedOnMousedown;
     List<Selection> selection;
 
+    Command selectionCommand;
+
     Selection ChooseFromHoverToSelect();
     Selection ChooseFromHoverToDrag();
     void HitTestMakeSelection(Point2d mp);
     void ClearSelection();
     void ClearNonexistentSelectionItems();
     /// This structure is filled by a call to GroupSelection().
-    struct {
+    struct GroupSelections {
         std::vector<hEntity>     point;
         std::vector<hEntity>     entity;
         std::vector<hEntity>     anyNormal;

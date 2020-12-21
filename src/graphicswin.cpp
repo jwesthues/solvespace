@@ -146,6 +146,7 @@ const MenuEntry Menu[] = {
 { 1, N_("Reference An&gle"),            Command::REF_ANGLE,        S|'n',   KN, mCon   },
 { 1, N_("Other S&upplementary Angle"),  Command::OTHER_ANGLE,      'u',     KN, mCon   },
 { 1, N_("Toggle R&eference Dim"),       Command::REFERENCE,        'e',     KN, mCon   },
+{ 1, N_("Constrain Coincident Point by selection"),       Command::SELECT_ON,        'e',     KN, mCon   },
 { 1, NULL,                              Command::NONE,             0,       KN, NULL   },
 { 1, N_("&Horizontal"),                 Command::HORIZONTAL,       'h',     KN, mCon   },
 { 1, N_("&Vertical"),                   Command::VERTICAL,         'v',     KN, mCon   },
@@ -408,6 +409,7 @@ void GraphicsWindow::Init() {
     showSnapGrid = false;
     context.active = false;
     toolbarHovered = Command::NONE;
+    selectionCommand = Command::NONE;
 
     if(!window) {
         window = Platform::CreateWindow();

@@ -6,6 +6,7 @@
 // Copyright 2008-2013 Jonathan Westhues.
 //-----------------------------------------------------------------------------
 #include "solvespace.h"
+#include "constraintmenu.h"
 
 bool GraphicsWindow::Selection::Equals(Selection *b) {
     if(entity     != b->entity)     return false;
@@ -200,6 +201,11 @@ void GraphicsWindow::MakeSelected(Selection *stog) {
     }
 
     selection.Add(stog);
+
+    // TODO: insert command selection handler
+    if(selectionCommand != Command::NONE) {
+        doCommandSelectionTest(selectionCommand);
+    }
 }
 
 //-----------------------------------------------------------------------------
