@@ -259,6 +259,8 @@ void TextWindow::ScreenChangeGroupOption(int link, uint32_t v) {
         case 'd': g->allDimsReference = !(g->allDimsReference); break;
 
         case 'f': g->forceToMesh = !(g->forceToMesh); break;
+
+        case 'x': g->explode = !(g->explode); break;
     }
 
     SS.MarkGroupDirty(g->h);
@@ -470,6 +472,12 @@ void TextWindow::ShowGroupInfo() {
     Printf(false, " %f%Ld%Fd%s  treat all dimensions as reference",
         &TextWindow::ScreenChangeGroupOption,
         g->allDimsReference ? CHECK_TRUE : CHECK_FALSE);
+
+    if(g->type == Group::Type::DRAWING_WORKPLANE) {
+        Printf(false, " %f%Lx%Fd%s  explode sketch when active",
+            &TextWindow::ScreenChangeGroupOption,
+            g->explode ? CHECK_TRUE : CHECK_FALSE);
+    }
 
     if(g->booleanFailed) {
         Printf(false, "");

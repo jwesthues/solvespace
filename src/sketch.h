@@ -177,6 +177,7 @@ public:
     bool        allowRedundant;
     bool        allDimsReference;
     double      scale;
+    bool        explode;
 
     bool        clean;
     bool        dofCheckOk;
@@ -591,6 +592,10 @@ public:
         beziers.l.Clear();
         edges.l.Clear();
     }
+
+    bool ShouldDrawExploded() const;
+    Vector ExplodeOffset() const;
+    Vector PointGetDrawNum() const;
 };
 
 class EntReqTable {
@@ -778,6 +783,8 @@ public:
                             hEntity he, Vector *refp);
 
     std::string DescriptionString() const;
+
+    bool ShouldDrawExploded() const;
 
     static hConstraint AddConstraint(Constraint *c, bool rememberForUndo = true);
     static void MenuConstrain(Command id);
