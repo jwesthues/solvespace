@@ -260,7 +260,12 @@ void TextWindow::ScreenChangeGroupOption(int link, uint32_t v) {
 
         case 'f': g->forceToMesh = !(g->forceToMesh); break;
 
-        case 'x': g->explode = !(g->explode); break;
+        case 'x':
+            g->explode = !(g->explode);
+            if(g->explode && g->explodeDistance < 1e-6) {
+                g->explodeDistance = 1.0;
+            }
+            break;
     }
 
     SS.MarkGroupDirty(g->h);
@@ -299,6 +304,13 @@ void TextWindow::ScreenChangeGroupScale(int link, uint32_t v) {
 
     SS.TW.ShowEditControl(13, ssprintf("%.3f", g->scale));
     SS.TW.edit.meaning = Edit::GROUP_SCALE;
+    SS.TW.edit.group.v = v;
+}
+void TextWindow::ScreenChangeGroupExplodeDistance(int link, uint32_t v) {
+    Group *g = SK.GetGroup(SS.TW.shown.group);
+
+    SS.TW.ShowEditControl(27, ssprintf("%.3f", g->explodeDistance));
+    SS.TW.edit.meaning = Edit::GROUP_EXPLODE_DISTANCE;
     SS.TW.edit.group.v = v;
 }
 void TextWindow::ScreenDeleteGroup(int link, uint32_t v) {
@@ -477,6 +489,11 @@ void TextWindow::ShowGroupInfo() {
         Printf(false, " %f%Lx%Fd%s  explode sketch when active",
             &TextWindow::ScreenChangeGroupOption,
             g->explode ? CHECK_TRUE : CHECK_FALSE);
+        if (g->explode) {
+            Printf(false, "      separate requests by %# %Fl%Ll%f%D[change]%E",
+            g->explodeDistance,
+            &TextWindow::ScreenChangeGroupExplodeDistance, g->h.v);
+        }
     }
 
     if(g->booleanFailed) {
@@ -824,6 +841,19 @@ void TextWindow::EditControlDone(std::string s) {
                     g->color.alpha = (int)(255.1f * alpha);
                     SS.MarkGroupDirty(g->h);
                     SS.GW.ClearSuper();
+                }
+            }
+            break;
+
+        case Edit::GROUP_EXPLODE_DISTANCE:
+            if(Expr *e = Expr::From(s, /*popUpError=*/true)) {
+                double ev = e->Eval();
+                if(ev < 1e-6) {
+                    Error(_("Explode separation must be above zero."));
+                } else {
+                    Group *g = SK.GetGroup(edit.group);
+                    g->explodeDistance = ev;
+                    SS.MarkGroupDirty(g->h);
                 }
             }
             break;

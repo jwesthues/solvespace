@@ -224,9 +224,11 @@ void SolveSpaceUI::GenerateAll(Generate type, bool andFindFree, bool genForBBox)
         if(PruneGroups(hg))
             goto pruned;
 
+        int groupRequestIndex = 0;
         for(auto &req : SK.request) {
             Request *r = &req;
             if(r->group != hg) continue;
+            r->groupRequestIndex = groupRequestIndex++;
 
             r->Generate(&(SK.entity), &(SK.param));
         }

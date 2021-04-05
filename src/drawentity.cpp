@@ -472,7 +472,9 @@ bool Entity::ShouldDrawExploded() const {
 
 Vector Entity::ExplodeOffset() const {
     if(ShouldDrawExploded() && workplane.v != 0) {
-        return SK.GetEntity(workplane)->Normal()->NormalN().ScaledBy(h.request().v);
+        int requestIdx = SK.GetRequest(h.request())->groupRequestIndex;
+        double offset = SK.GetGroup(group)->explodeDistance * (requestIdx + 1);
+        return SK.GetEntity(workplane)->Normal()->NormalN().ScaledBy(offset);
     } else {
         return Vector::From(0, 0, 0);
     }

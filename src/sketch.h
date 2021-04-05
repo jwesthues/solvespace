@@ -178,6 +178,7 @@ public:
     bool        allDimsReference;
     double      scale;
     bool        explode;
+    double      explodeDistance;
 
     bool        clean;
     bool        dofCheckOk;
@@ -369,6 +370,7 @@ public:
     std::string font;
     Platform::Path file;
     double      aspectRatio;
+    int groupRequestIndex;
 
     static hParam AddParam(ParamList *param, hParam hp);
     void Generate(EntityList *entity, ParamList *param);
