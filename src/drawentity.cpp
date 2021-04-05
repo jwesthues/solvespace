@@ -88,7 +88,7 @@ void Entity::GetReferencePoints(std::vector<Vector> *refs) {
         case Type::POINT_N_ROT_AXIS_TRANS:
         case Type::POINT_IN_3D:
         case Type::POINT_IN_2D:
-            refs->push_back(PointGetNum());
+            refs->push_back(PointGetDrawNum());
             break;
 
         case Type::NORMAL_N_COPY:
@@ -103,12 +103,12 @@ void Entity::GetReferencePoints(std::vector<Vector> *refs) {
         case Type::CUBIC_PERIODIC:
         case Type::TTF_TEXT:
         case Type::IMAGE:
-            refs->push_back(SK.GetEntity(point[0])->PointGetNum());
+            refs->push_back(SK.GetEntity(point[0])->PointGetDrawNum());
             break;
 
         case Type::LINE_SEGMENT: {
-            Vector a = SK.GetEntity(point[0])->PointGetNum(),
-                   b = SK.GetEntity(point[1])->PointGetNum();
+            Vector a = SK.GetEntity(point[0])->PointGetDrawNum(),
+                   b = SK.GetEntity(point[1])->PointGetDrawNum();
             refs->push_back(b.Plus(a.Minus(b).ScaledBy(0.5)));
             break;
         }
@@ -471,7 +471,7 @@ bool Entity::ShouldDrawExploded() const {
 }
 
 Vector Entity::ExplodeOffset() const {
-    if(/*type == Type::POINT_IN_2D*/ workplane.v != 0) {
+    if(ShouldDrawExploded() && workplane.v != 0) {
         return SK.GetEntity(workplane)->Normal()->NormalN().ScaledBy(h.request().v);
     } else {
         return Vector::From(0, 0, 0);
@@ -481,11 +481,7 @@ Vector Entity::ExplodeOffset() const {
 Vector Entity::PointGetDrawNum() const {
     // As per EntityBase::PointGetNum but specifically for when drawing/rendering the point
     // (and not when solving), so we can potentially draw it somewhere different
-    Vector result = PointGetNum();
-    if(ShouldDrawExploded()) {
-        result = result.Plus(ExplodeOffset());
-    }
-    return result;
+    return PointGetNum().Plus(ExplodeOffset());
 }
 
 void Entity::Draw(DrawAs how, Canvas *canvas) {
