@@ -325,6 +325,7 @@ public:
     void DrawPolyError(Canvas *canvas);
     void DrawFilledPaths(Canvas *canvas);
     void DrawContourAreaLabels(Canvas *canvas);
+    bool ShouldDrawExploded() const;
 
     SPolygon GetPolygon();
 

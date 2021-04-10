@@ -467,7 +467,7 @@ void Entity::GenerateBezierCurves(SBezierList *sbl) const {
 }
 
 bool Entity::ShouldDrawExploded() const {
-    return group == SS.GW.activeGroup && SK.GetGroup(group)->explode;
+    return SK.GetGroup(group)->ShouldDrawExploded();
 }
 
 Vector Entity::ExplodeOffset() const {

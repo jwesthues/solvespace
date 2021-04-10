@@ -1315,5 +1315,5 @@ bool Constraint::HasLabel() const {
 }
 
 bool Constraint::ShouldDrawExploded() const {
-    return group == SS.GW.activeGroup && SK.GetGroup(group)->explode;
+    return SK.GetGroup(group)->ShouldDrawExploded();
 }
