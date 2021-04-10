@@ -489,7 +489,7 @@ void TextWindow::ShowGroupInfo() {
         Printf(false, " %f%Lx%Fd%s  explode sketch when active",
             &TextWindow::ScreenChangeGroupOption,
             g->explode ? CHECK_TRUE : CHECK_FALSE);
-        if (g->explode) {
+        if(g->explode) {
             Printf(false, "      separate requests by %# %Fl%Ll%f%D[change]%E",
             g->explodeDistance,
             &TextWindow::ScreenChangeGroupExplodeDistance, g->h.v);

@@ -538,7 +538,7 @@ void Constraint::DoLayout(DrawAs how, Canvas *canvas,
                 DoProjectedPoint(canvas, hcs, &bp);
             }
 
-            if (ShouldDrawExploded()) {
+            if(ShouldDrawExploded()) {
                 // Offset A and B by the same offset so the constraint is drawn
                 // in the plane of one of the exploded points (rather than at an
                 // angle)
@@ -561,13 +561,13 @@ void Constraint::DoLayout(DrawAs how, Canvas *canvas,
                    dp = (bp.Minus(ap)),
                    pp = SK.GetEntity(entityA)->VectorGetNum();
 
-            if (ShouldDrawExploded()) {
+            if(ShouldDrawExploded()) {
                 // explode for whichever point is in the workplane (or the first if both are) 
                 Entity *pt = SK.GetEntity(ptA);
-                if (pt->group.v != group.v) {
+                if(pt->group != group) {
                     pt = SK.GetEntity(ptB);
                 }
-                if (pt->group.v == group.v) {
+                if(pt->group == group) {
                     Vector offset = pt->ExplodeOffset();
                     ap = ap.Plus(offset);
                     bp = bp.Plus(offset);
@@ -633,8 +633,8 @@ void Constraint::DoLayout(DrawAs how, Canvas *canvas,
             // with explode enabled) otherwise it's too visually confusing to figure out what the
             // correct projections should be.
             bool shouldExplode = ShouldDrawExploded()
-                && ptEntity->group.v == group.v
-                && line->group.v == group.v;
+                && ptEntity->group == group
+                && line->group == group;
             if(shouldExplode) {
                 Vector explodeOffset = ptEntity->ExplodeOffset();
                 pt = pt.Plus(explodeOffset);
@@ -988,7 +988,7 @@ void Constraint::DoLayout(DrawAs how, Canvas *canvas,
                 Vector u = (gn.Cross(n)).WithMagnitude(4/camera.scale);
                 Vector p = e->VectorGetRefPoint();
 
-                if (ShouldDrawExploded()) {
+                if(ShouldDrawExploded()) {
                     p = p.Plus(e->ExplodeOffset());
                 }
 
@@ -1035,7 +1035,7 @@ void Constraint::DoLayout(DrawAs how, Canvas *canvas,
                     DoProjectedPoint(canvas, hcs, &b);
                 }
 
-                if (ShouldDrawExploded()) {
+                if(ShouldDrawExploded()) {
                     Vector offset = e->ExplodeOffset();
                     a = a.Plus(offset);
                     b = b.Plus(offset);
@@ -1060,7 +1060,7 @@ void Constraint::DoLayout(DrawAs how, Canvas *canvas,
                 DoProjectedPoint(canvas, hcs, &a);
                 DoProjectedPoint(canvas, hcs, &b);
             }
-            if (ShouldDrawExploded()) {
+            if(ShouldDrawExploded()) {
                 Vector offset = forLen->ExplodeOffset();
                 a = a.Plus(offset);
                 b = b.Plus(offset);
@@ -1080,7 +1080,7 @@ void Constraint::DoLayout(DrawAs how, Canvas *canvas,
             }
 
             Vector closest = pt.ClosestPointOnLine(la, lb.Minus(la));
-            if (ShouldDrawExploded()) {
+            if(ShouldDrawExploded()) {
                 Vector offset = SK.GetEntity(ptA)->ExplodeOffset();
                 pt = pt.Plus(offset);
                 closest = closest.Plus(offset);
