@@ -42,3 +42,17 @@ jobs:
       run: .github/scripts/install-macos.sh ci
     - name: Build & Test
       run: .github/scripts/build-macos.sh debug arm64 && .github/scripts/build-macos.sh debug x86_64
+
+  test_flatpak:
+    name: Test Flatpak x86_64
+    runs-on: ubuntu-latest
+    container:
+      image: bilelmoussaoui/flatpak-github-actions:freedesktop-20.08
+      options: --privileged
+    steps:
+      - uses: actions/checkout@v2
+      - uses: bilelmoussaoui/flatpak-github-actions/flatpak-builder@v3
+        with:
+          bundle: "solvespace.flatpak"
+          manifest-path: "pkg/flatpak/com.solvespace.SolveSpace.json"
+  

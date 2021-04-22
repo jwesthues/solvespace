@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.solvespace.SolveSpace</id>
+
+  <name>SolveSpace</name>
+  <summary>A free (GPLv3) parametric 3d CAD tool</summary>
+
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <update_contact>ryan_AT_ryanpavlik.com</update_contact>
+
+  <categories>
+    <category>Graphics</category>
+    <category>3DGraphics</category>
+    <category>Engineering</category>
+  </categories>
+  <description>
+    <p>
+      SolveSpace is a free (GPLv3) parametric 3d CAD tool. Applications include:
+    </p>
+    <ul>
+      <li>Modeling 3d parts — draw with extrudes, revolves, and Boolean operations</li>
+      <li>Modeling 2d parts — draw the part as a single section, and export; use 3d assembly to verify fit</li>
+      <li>Modeling 3d-printed parts — export the STL or other triangle mesh expected by most slicers</li>
+      <li>Preparing 2D CAM data — export 2d vector art for a waterjet machine or laser cutter</li>
+      <li>Mechanism design — use the constraint solver to simulate planar or spatial linkages</li>
+      <li>Plane and solid geometry — replace hand-solved trigonometry with a live dimensioned drawing</li>
+    </ul>
+  </description>
+  <url type="homepage">https://solvespace.com</url>
+  <url type="bugtracker">https://github.com/solvespace/solvespace/issues</url>
+
+  <launchable type="desktop-id">@DESKTOP_FILE_NAME@</launchable>
+  <provides>
+    <mediatype>application/x-solvespace</mediatype>
+  </provides>
+
+  <content_rating type="oars-1.0" />
+
+  <releases>
+    <release version="3.0" date="2021-04-18" type="stable">
+      <description>
+        <p>Major new stable release. Includes new intersection boolean operation,
+        new types of groups, solid model suppression, usability improvements
+        (especially regarding redundant constraints and automatic constraints),
+        and more. Also includes performance and scalability improvements.</p>
+      </description>
+      <url>https://github.com/solvespace/solvespace/releases/tag/v3.0</url>
+    </release>
+
+    <release version="3.0~rc2" date="2021-01-17" type="development">
+      <description>
+        <p>Second release candidate for the 3.0 stable release.</p>
+      </description>
+      <url>https://github.com/solvespace/solvespace/releases/tag/v3.0.rc2</url>
+    </release>
+
+    <release version="3.0~rc1" date="2020-11-18" type="development">
+      <description>
+        <p>First release candidate for the 3.0 stable release.</p>
+      </description>
+      <url>https://github.com/solvespace/solvespace/releases/tag/v3.0.rc1</url>
+    </release>
+
+    <release version="2.3" date="2016-12-23" type="stable">
+      <description>
+        <p>Bug-fix release in the 2.x series, fixing some crashes.</p>
+      </description>
+      <url>https://github.com/solvespace/solvespace/releases/tag/v2.3</url>
+    </release>
+
+    <release version="2.2" date="2016-10-16" type="stable">
+      <description>
+        <p>Bug-fix release, including performance improvements.</p>
+      </description>
+      <url>https://github.com/solvespace/solvespace/releases/tag/v2.2</url>
+    </release>
+
+    <release version="2.1" date="2016-06-11" type="stable">
+      <description>
+        <p>Introduced *nix compatibility, internationalization, technical drawing mode, improved import and export, and other features and fixes.</p>
+      </description>
+      <url>https://github.com/solvespace/solvespace/releases/tag/v2.1</url>
+    </release>
+  </releases>
+
+</component>

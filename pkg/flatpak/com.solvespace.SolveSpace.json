@@ -1,21 +1,28 @@
 {
     "app-id": "com.solvespace.SolveSpace",
-    "runtime": "org.gnome.Platform",
-    "runtime-version": "3.30",
-    "sdk": "org.gnome.Sdk",
+    "runtime": "org.freedesktop.Platform",
+    "runtime-version": "20.08",
+    "sdk": "org.freedesktop.Sdk",
     "finish-args": [
-        /* Access to display server and OpenGL */
-        "--share=ipc", "--socket=fallback-x11", "--socket=wayland", "--device=dri",
-        /* Access to save files */
+        "--share=ipc",
+        "--socket=fallback-x11",
+        "--socket=wayland",
+        "--device=dri",
         "--filesystem=home"
     ],
     "cleanup": [
-        "/include", "/lib/*/include",
-        "*.a", "*.la", "*.m4", "/lib/libslvs*.so*", "/lib/libglibmm_generate_extra_defs*.so*",
-        "/share/pkgconfig", "*.pc",
-        "/share/man", "/share/doc",
+        "/include",
+        "/lib/*/include",
+        "*.a",
+        "*.la",
+        "*.m4",
+        "/lib/libslvs*.so*",
+        "/lib/libglibmm_generate_extra_defs*.so*",
+        "/share/pkgconfig",
+        "*.pc",
+        "/share/man",
+        "/share/doc",
         "/share/aclocal",
-        /* mm-common junk */
         "/bin/mm-common-prepare",
         "/share/mm-common"
     ],
@@ -26,8 +33,8 @@
             "sources": [
                 {
                     "type": "archive",
-                    "url": "http://ftp.gnome.org/pub/GNOME/sources/mm-common/0.9/mm-common-0.9.12.tar.xz",
-                    "sha256": "ceffdcce1e5b52742884c233ec604bf6fded12eea9da077ce7a62c02c87e7c0b"
+                    "url": "https://download.gnome.org/sources/mm-common/1.0/mm-common-1.0.2.tar.xz",
+                    "sha256": "a2a99f3fa943cf662f189163ed39a2cfc19a428d906dd4f92b387d3659d1641d"
                 }
             ]
         },
@@ -39,21 +46,20 @@
             "sources": [
                 {
                     "type": "archive",
-                    "url": "http://ftp.gnome.org/pub/GNOME/sources/libsigc++/2.10/libsigc++-2.10.1.tar.xz",
-                    "sha256": "c9a25f26178c6cbb147f9904d8c533b5a5c5111a41ac2eb781eb734eea446003"
+                    "url": "https://download.gnome.org/sources/libsigc++/2.10/libsigc%2B%2B-2.10.6.tar.xz",
+                    "sha256": "dda176dc4681bda9d5a2ac1bc55273bdd381662b7a6d49e918267d13e8774e1b"
                 }
             ]
         },
         {
             "name": "glibmm",
-            "config-opts": [
-                "--disable-documentation"
-            ],
+            "config-opts": [],
+            "buildsystem": "meson",
             "sources": [
                 {
                     "type": "archive",
-                    "url": "http://ftp.gnome.org/pub/GNOME/sources/glibmm/2.58/glibmm-2.58.1.tar.xz",
-                    "sha256": "6e5fe03bdf1e220eeffd543e017fd2fb15bcec9235f0ffd50674aff9362a85f0"
+                    "url": "https://download.gnome.org/sources/glibmm/2.64/glibmm-2.64.5.tar.xz",
+                    "sha256": "508fc86e2c9141198aa16c225b16fd6b911917c0d3817602652844d0973ea386"
                 }
             ]
         },
@@ -98,14 +104,13 @@
         },
         {
             "name": "gtkmm",
-            "config-opts": [
-                "--disable-documentation"
-            ],
+            "config-opts": [],
+            "buildsystem": "meson",
             "sources": [
                 {
                     "type": "archive",
-                    "url": "http://ftp.gnome.org/pub/GNOME/sources/gtkmm/3.24/gtkmm-3.24.1.tar.xz",
-                    "sha256": "ddfe42ed2458a20a34de252854bcf4b52d3f0c671c045f56b42aa27c7542d2fd"
+                    "url": "https://download.gnome.org/sources/gtkmm/3.24/gtkmm-3.24.4.tar.xz",
+                    "sha256": "9beb71c3e90cfcfb790396b51e3f5e7169966751efd4f3ef9697114be3be6743"
                 }
             ]
         },
@@ -113,6 +118,7 @@
             "name": "libjson-c",
             "sources": [
                 {
+                    "#comment": "0.15-nodoc doesn't build",
                     "type": "archive",
                     "url": "https://s3.amazonaws.com/json-c_releases/releases/json-c-0.13.1-nodoc.tar.gz",
                     "sha256": "94a26340c0785fcff4f46ff38609cf84ebcd670df0c8efd75d039cc951d80132"
@@ -125,8 +131,8 @@
             "name": "SolveSpace",
             "sources": [
                 {
-                    "type": "git",
-                    "path": "/home/whitequark/Projects/solvespace"
+                    "type": "dir",
+                    "path": "../.."
                 }
             ],
             "buildsystem": "cmake",

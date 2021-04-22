@@ -6,5 +6,5 @@ Exec=solvespace
 MimeType=application/x-solvespace
 Icon=${SNAP}/meta/icons/hicolor/scalable/apps/snap.solvespace.svg
 Type=Application
-Categories=Graphics
+Categories=Graphics;3DGraphics;Engineering;
 Keywords=parametric;cad;2d;3d;

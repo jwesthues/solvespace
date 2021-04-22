@@ -6,5 +6,5 @@ Exec=${CMAKE_INSTALL_FULL_BINDIR}/solvespace
 MimeType=application/x-solvespace
 Icon=com.solvespace.SolveSpace
 Type=Application
-Categories=Graphics
+Categories=Graphics;3DGraphics;Engineering;
 Keywords=parametric;cad;2d;3d;

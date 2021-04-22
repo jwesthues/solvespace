@@ -134,6 +134,13 @@ else()
             DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/applications
             RENAME      com.solvespace.SolveSpace.desktop)
 
+        set(DESKTOP_FILE_NAME com.solvespace.SolveSpace.desktop)
+        configure_file(
+            ${CMAKE_CURRENT_SOURCE_DIR}/freedesktop/com.solvespace.SolveSpace.metainfo.xml.in
+            ${CMAKE_CURRENT_BINARY_DIR}/freedesktop/com.solvespace.SolveSpace.metainfo.xml)
+        install(FILES ${CMAKE_CURRENT_BINARY_DIR}/freedesktop/com.solvespace.SolveSpace.metainfo.xml
+            DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/metainfo)
+
         install(FILES freedesktop/solvespace-flatpak-mime.xml
             DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/mime/packages
             RENAME      com.solvespace.SolveSpace-slvs.xml)
@@ -175,6 +182,13 @@ else()
             ${CMAKE_CURRENT_BINARY_DIR}/freedesktop/solvespace.desktop)
         install(FILES ${CMAKE_CURRENT_BINARY_DIR}/freedesktop/solvespace.desktop
             DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/applications)
+
+        set(DESKTOP_FILE_NAME solvespace.desktop)
+        configure_file(
+            ${CMAKE_CURRENT_SOURCE_DIR}/freedesktop/com.solvespace.SolveSpace.metainfo.xml.in
+            ${CMAKE_CURRENT_BINARY_DIR}/freedesktop/com.solvespace.SolveSpace.metainfo.xml)
+        install(FILES ${CMAKE_CURRENT_BINARY_DIR}/freedesktop/com.solvespace.SolveSpace.metainfo.xml
+            DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/metainfo)
 
         install(FILES freedesktop/solvespace-mime.xml
             DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/mime/packages
