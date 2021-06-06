@@ -51,6 +51,8 @@
 #   undef uint32_t
 #endif
 
+#include "spnavdevice.h"
+
 #if defined(__GNUC__)
 // Disable bogus warning emitted by GCC on GetProcAddress, since there seems to be no way
 // of restructuring the code to easily disable it just at the call site.
@@ -541,6 +543,8 @@ public:
     SiHdl hSpaceWare = SI_NO_HANDLE;
 #endif
 
+    std::unique_ptr<NavDeviceWrapper> navDev;
+
     std::shared_ptr<MenuBarImplWin32> menuBar;
     std::string tooltipText;
     bool scrollbarVisible = false;
@@ -695,6 +699,11 @@ public:
         // Make sure any of our child windows get destroyed before we call DestroyWindow, or their
         // own destructors may fail.
         menuBar.reset();
+        
+        if (navDev != NULL) {
+            KillTimer(hWindow, (UINT_PTR)this);
+        }
+        navDev.reset();
 
         sscheck(DestroyWindow(hWindow));
 #if defined(HAVE_SPACEWARE)
@@ -725,7 +734,7 @@ public:
             if(SiGetEvent(window->hSpaceWare, 0, &sged, &sse) == SI_IS_EVENT) {
                 SixDofEvent event = {};
                 event.shiftDown    = ((GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0);
-                event.controlDown  = ((GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0);
+                event.controlDown  = ((GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0);
                 if(sse.type == SI_MOTION_EVENT) {
                     // The Z axis translation and rotation are both
                     // backwards in the default mapping.
@@ -736,6 +745,8 @@ public:
                     event.rotationX    =  sse.u.spwData.mData[SI_RX]*0.001,
                     event.rotationY    =  sse.u.spwData.mData[SI_RY]*0.001,
                     event.rotationZ    = -sse.u.spwData.mData[SI_RZ]*0.001;
+                    dbp("spacemouse %f, %f, %f, %f, %f, %f", event.translationX, event.translationY,
+                        event.translationZ, event.rotationX, event.rotationY, event.rotationZ);
                 } else if(sse.type == SI_BUTTON_EVENT) {
                     if(SiButtonPressed(&sse) == SI_APP_FIT_BUTTON) {
                         event.type   = SixDofEvent::Type::PRESS;
@@ -1060,6 +1071,28 @@ public:
                 MenuItemImplWin32 *menuItem = (MenuItemImplWin32 *)mii.dwItemData;
                 if(menuItem->onTrigger) {
                     menuItem->onTrigger();
+                }
+                break;
+            }
+
+            case WM_TIMER: {
+                //! @todo where to put this? We don't actually need to handle window messages,
+                //! just poll it periodically.
+                if(window->navDev != nullptr && wParam == (WPARAM)window) {
+
+                    SixDofEvent event = {};
+                    event.shiftDown   = ((GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0);
+                    event.controlDown = ((GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0);
+                    if(window->navDev->process(event)) {
+                        if(event.type == SixDofEvent::Type::MOTION) {
+                            dbp("spnavdev %f, %f, %f, %f, %f, %f", event.translationX,
+                                event.translationY, event.translationZ, event.rotationX,
+                                event.rotationY, event.rotationZ);
+                        }
+                        if(window->onSixDofEvent) {
+                            window->onSixDofEvent(event);
+                        }
+                    }
                 }
                 break;
             }
@@ -1435,6 +1468,26 @@ void Request3DConnexionEventsForWindow(WindowRef window) {
         windowImpl->hSpaceWare = SiOpen("SolveSpace", SI_ANY_DEVICE, SI_NO_MASK, SI_EVENT,
                                         &windowImpl->sod);
         SiSetUiMode(windowImpl->hSpaceWare, SI_UI_NO_CONTROLS);
+    }
+}
+#elif defined(HAVE_SPNAVDEV)
+static std::unique_ptr<NavDeviceWrapper> navWrapper;
+void Open3DConnexion() {
+    navWrapper = std::make_unique<NavDeviceWrapper>();
+    if(!navWrapper->active()) {
+        navWrapper.reset();
+    }
+}
+void Close3DConnexion() {
+    navWrapper.reset();
+}
+void Request3DConnexionEventsForWindow(WindowRef window) {
+    std::shared_ptr<WindowImplWin32> windowImpl = std::static_pointer_cast<WindowImplWin32>(window);
+    if(navWrapper) {
+        // Have the window adopt our object
+        windowImpl->navDev = std::move(navWrapper);
+        navWrapper.reset();
+        SetTimer(windowImpl->hWindow, (UINT_PTR)windowImpl.get(), USER_TIMER_MINIMUM, (TIMERPROC) NULL);
     }
 }
 #else

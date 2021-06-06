@@ -23,3 +23,6 @@
 [submodule "extlib/mimalloc"]
 	path = extlib/mimalloc
 	url = https://github.com/microsoft/mimalloc
+[submodule "extlib/libspnavdev"]
+	path = extlib/libspnavdev
+	url = https://github.com/rpavlik/libspnavdev.git

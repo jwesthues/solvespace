@@ -9,6 +9,9 @@
 /* Do we have the si library on win32, or libspnav on *nix? */
 #cmakedefine HAVE_SPACEWARE
 
+/* Do we have libspnavdev? */
+#cmakedefine HAVE_SPNAVDEV
+
 /* What OpenGL version do we use? */
 #define HAVE_OPENGL @OPENGL@
 

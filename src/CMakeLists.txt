@@ -106,7 +106,8 @@ endif()
 
 set(platform_SOURCES
     ${gl_SOURCES}
-    platform/entrygui.cpp)
+    platform/entrygui.cpp
+    platform/spnavdevice.cpp)
 
 if(WIN32)
     list(APPEND platform_SOURCES
@@ -133,6 +134,9 @@ else()
         link_directories(${${pkg_config_lib}_LIBRARY_DIRS})
         list(APPEND platform_LIBRARIES ${${pkg_config_lib}_LIBRARIES})
     endforeach()
+endif()
+if(HAVE_SPNAVDEV)
+    list(APPEND platform_LIBRARIES spnavdev)
 endif()
 
 set(every_platform_SOURCES
@@ -319,7 +323,7 @@ endif()
 # solvespace graphical executable
 
 if(ENABLE_GUI)
-    add_executable(solvespace WIN32 MACOSX_BUNDLE
+    add_executable(solvespace MACOSX_BUNDLE
         ${solvespace_core_gl_SOURCES}
         ${platform_SOURCES}
         $<TARGET_PROPERTY:resources,EXTRA_SOURCES>)
@@ -343,6 +347,7 @@ if(ENABLE_GUI)
             XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER "com.solvespace"
             RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
     endif()
+
 endif()
 
 # solvespace headless library
