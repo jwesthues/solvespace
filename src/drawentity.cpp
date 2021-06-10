@@ -86,6 +86,7 @@ void Entity::GetReferencePoints(std::vector<Vector> *refs) {
         case Type::POINT_N_ROT_TRANS:
         case Type::POINT_N_ROT_AA:
         case Type::POINT_N_ROT_AXIS_TRANS:
+        case Type::POINT_MIRROR:
         case Type::POINT_IN_3D:
         case Type::POINT_IN_2D:
             refs->push_back(PointGetNum());
@@ -96,6 +97,7 @@ void Entity::GetReferencePoints(std::vector<Vector> *refs) {
         case Type::NORMAL_N_ROT_AA:
         case Type::NORMAL_IN_3D:
         case Type::NORMAL_IN_2D:
+        case Type::NORMAL_MIRROR:
         case Type::WORKPLANE:
         case Type::CIRCLE:
         case Type::ARC_OF_CIRCLE:
@@ -121,6 +123,7 @@ void Entity::GetReferencePoints(std::vector<Vector> *refs) {
         case Type::FACE_N_TRANS:
         case Type::FACE_N_ROT_AA:
         case Type::FACE_ROT_NORMAL_PT:
+        case Type::FACE_MIRROR:
         case Type::FACE_N_ROT_AXIS_TRANS:
             break;
     }
@@ -529,7 +532,8 @@ void Entity::Draw(DrawAs how, Canvas *canvas) {
         case Type::POINT_N_ROT_AA:
         case Type::POINT_N_ROT_AXIS_TRANS:
         case Type::POINT_IN_3D:
-        case Type::POINT_IN_2D: {
+        case Type::POINT_IN_2D:
+        case Type::POINT_MIRROR: {
             if(how == DrawAs::HIDDEN) return;
 
             // If we're analyzing the sketch to show the degrees of freedom,
@@ -573,6 +577,7 @@ void Entity::Draw(DrawAs how, Canvas *canvas) {
         case Type::NORMAL_N_COPY:
         case Type::NORMAL_N_ROT:
         case Type::NORMAL_N_ROT_AA:
+        case Type::NORMAL_MIRROR:
         case Type::NORMAL_IN_3D:
         case Type::NORMAL_IN_2D: {
             const Camera &camera = canvas->GetCamera();
@@ -783,6 +788,7 @@ void Entity::Draw(DrawAs how, Canvas *canvas) {
         case Type::FACE_N_TRANS:
         case Type::FACE_N_ROT_AA:
         case Type::FACE_ROT_NORMAL_PT:
+        case Type::FACE_MIRROR:
         case Type::FACE_N_ROT_AXIS_TRANS:
             // Do nothing; these are drawn with the triangle mesh
             return;

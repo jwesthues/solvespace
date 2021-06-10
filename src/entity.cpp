@@ -246,6 +246,7 @@ bool EntityBase::IsPoint() const {
         case Type::POINT_N_ROT_TRANS:
         case Type::POINT_N_ROT_AA:
         case Type::POINT_N_ROT_AXIS_TRANS:
+        case Type::POINT_MIRROR:
             return true;
 
         default:
@@ -260,6 +261,7 @@ bool EntityBase::IsNormal() const {
         case Type::NORMAL_N_COPY:
         case Type::NORMAL_N_ROT:
         case Type::NORMAL_N_ROT_AA:
+        case Type::NORMAL_MIRROR:
             return true;
 
         default:           return false;
@@ -293,7 +295,18 @@ Quaternion EntityBase::NormalGetNum() const {
             q = q.Times(numNormal);
             break;
         }
-
+        
+        case Type::NORMAL_MIRROR: {
+            Vector orig = numNormal.RotationN().WithMagnitude(1.0);
+            Vector n = Vector::From(
+                        SK.GetParam(param[0])->val,
+                        SK.GetParam(param[1])->val,
+                        SK.GetParam(param[2])->val);
+            Vector cp = orig.Cross(n);
+            q = numNormal.Times(Quaternion::From(n.Dot(orig), cp.x, cp.y, cp.z));
+            break;
+        }
+ 
         default: ssassert(false, "Unexpected entity type");
     }
     return q;
@@ -323,6 +336,7 @@ void EntityBase::NormalForceTo(Quaternion q) {
         }
 
         case Type::NORMAL_N_ROT_AA:
+        case Type::NORMAL_MIRROR:
             // Not sure if I'll bother implementing this one
             break;
 
@@ -381,6 +395,19 @@ ExprQuaternion EntityBase::NormalGetExprs() const {
             q = q.Times(orig);
             break;
         }
+        
+        case Type::NORMAL_MIRROR: {
+            ExprVector orig = ExprVector::From(numNormal.RotationN());
+            ExprVector n = ExprVector::From(
+                Expr::From(param[0]), Expr::From(param[1]), Expr::From(param[2]));
+            ExprVector cp = orig.Cross(n);
+            Expr *W = cp.Dot(n);
+            
+            ExprQuaternion r = ExprQuaternion::From(W,
+                     Expr::From(param[0]), Expr::From(param[1]), Expr::From(param[2]));
+            q = ExprQuaternion::From(numNormal).Times(r);
+            break;
+        }
 
         default: ssassert(false, "Unexpected entity type");
     }
@@ -417,6 +444,15 @@ void EntityBase::PointForceTo(Vector p) {
             p = p.Minus(c->WorkplaneGetOffset());
             SK.GetParam(param[0])->val = p.Dot(c->Normal()->NormalU());
             SK.GetParam(param[1])->val = p.Dot(c->Normal()->NormalV());
+            break;
+        }
+
+        case Type::POINT_MIRROR: {
+            Vector trans = p.Minus(numPoint).WithMagnitude(1.0);
+            SK.GetParam(param[0])->val = trans.x;
+            SK.GetParam(param[1])->val = trans.y;
+            SK.GetParam(param[2])->val = trans.z;
+            SK.GetParam(param[3])->val = p.Plus(numPoint).ScaledBy(0.5).Dot(trans);
             break;
         }
 
@@ -511,6 +547,13 @@ Vector EntityBase::PointGetNum() const {
             p = p.Plus(c->WorkplaneGetOffset());
             break;
         }
+        
+        case Type::POINT_MIRROR: {
+            Vector norm = Vector::From(param[0], param[1], param[2]);
+            double dist = SK.GetParam(param[3])->val;
+            p = numPoint.Plus(norm.ScaledBy(dist*2 - 2*numPoint.Dot(norm)));
+            break;
+        }
 
         case Type::POINT_N_TRANS: {
             Vector trans = Vector::From(param[0], param[1], param[2]);
@@ -569,6 +612,14 @@ ExprVector EntityBase::PointGetExprs() const {
             r = c->WorkplaneGetOffsetExprs();
             r = r.Plus(u.ScaledBy(Expr::From(param[0])));
             r = r.Plus(v.ScaledBy(Expr::From(param[1])));
+            break;
+        }
+        case Type::POINT_MIRROR:{
+            ExprVector orig = ExprVector::From(numPoint);
+            ExprVector norm = ExprVector::From(param[0], param[1], param[2]);
+            Expr *dist = Expr::From(param[3]);
+            r = orig.Plus(norm.ScaledBy(
+                dist->Minus(orig.Dot(norm))->Times(Expr::From(2.0))));
             break;
         }
         case Type::POINT_N_TRANS: {
@@ -703,6 +754,7 @@ bool EntityBase::IsFace() const {
         case Type::FACE_N_ROT_AA:
         case Type::FACE_ROT_NORMAL_PT:
         case Type::FACE_N_ROT_AXIS_TRANS:
+        case Type::FACE_MIRROR:
             return true;
         default:
             return false;
@@ -714,6 +766,12 @@ ExprVector EntityBase::FaceGetNormalExprs() const {
     if(type == Type::FACE_NORMAL_PT) {
         Vector v = Vector::From(numNormal.vx, numNormal.vy, numNormal.vz);
         r = ExprVector::From(v.WithMagnitude(1));
+    } else if(type == Type::FACE_MIRROR) {
+        Vector v = Vector::From(numNormal.vx, numNormal.vy, numNormal.vz).ScaledBy(-1.0);
+        r = ExprVector::From(v.WithMagnitude(1));
+        ExprQuaternion q = ExprQuaternion::From( Expr::From(0.0),
+            Expr::From(param[0]), Expr::From(param[1]), Expr::From(param[2]) );
+        r = q.Rotate(r);
     } else if(type == Type::FACE_XPROD) {
         ExprVector vc = ExprVector::From(param[0], param[1], param[2]);
         ExprVector vn =
@@ -742,6 +800,14 @@ Vector EntityBase::FaceGetNormalNum() const {
     Vector r;
     if(type == Type::FACE_NORMAL_PT) {
         r = Vector::From(numNormal.vx, numNormal.vy, numNormal.vz);
+    } else if(type == Type::FACE_MIRROR) {
+        r = Vector::From(numNormal.vx, numNormal.vy, numNormal.vz)
+            .ScaledBy(-1.0).WithMagnitude(1.0);
+        Quaternion q = Quaternion::From(0.0,
+                                SK.GetParam(param[0])->val,
+                                SK.GetParam(param[1])->val,
+                                SK.GetParam(param[2])->val);
+        r = q.Rotate(r);
     } else if(type == Type::FACE_XPROD) {
         Vector vc = Vector::From(param[0], param[1], param[2]);
         Vector vn = Vector::From(numNormal.vx, numNormal.vy, numNormal.vz);
@@ -763,7 +829,8 @@ Vector EntityBase::FaceGetNormalNum() const {
 
 ExprVector EntityBase::FaceGetPointExprs() const {
     ExprVector r;
-    if((type == Type::FACE_NORMAL_PT) || (type==Type::FACE_ROT_NORMAL_PT)) {
+    if((type == Type::FACE_NORMAL_PT) || (type==Type::FACE_ROT_NORMAL_PT)
+        || (type == Type::FACE_MIRROR)) {
         r = SK.GetEntity(point[0])->PointGetExprs();
     } else if(type == Type::FACE_XPROD) {
         r = ExprVector::From(numPoint);
@@ -803,6 +870,11 @@ Vector EntityBase::FaceGetPointNum() const {
     Vector r;
     if((type == Type::FACE_NORMAL_PT) || (type==Type::FACE_ROT_NORMAL_PT)) {
         r = SK.GetEntity(point[0])->PointGetNum();
+    } else if(type == Type::FACE_MIRROR) {
+        Vector norm = Vector::From(param[0], param[1], param[2]);
+        double dist = SK.GetParam(param[3])->val;
+        Vector numpoint = SK.GetEntity(point[0])->PointGetNum();
+        r = numpoint.Plus(norm.ScaledBy(dist*2 - 2*numPoint.Dot(norm)));
     } else if(type == Type::FACE_XPROD) {
         r = numPoint;
     } else if(type == Type::FACE_N_ROT_TRANS) {

@@ -177,6 +177,33 @@ void Group::GenerateForStepAndRepeat(T *steps, T *outs, Group::CombineAs forWhat
 }
 
 template<class T>
+void Group::GenerateForMirror(T *source, T *outs, Group::CombineAs forWhat) {
+    T original, transd, combined;
+    original = {};
+    transd = {};
+    combined = {};
+    original.MakeFromCopyOf(source);
+    original.RemapFaces(this, REMAP_BOTTOM);
+    Vector axis = Vector::From(h.param(0), h.param(1), h.param(2));
+    transd.MakeFromTransformationOf(source,
+        axis.ScaledBy(SK.GetParam(h.param(3))->val * 2),
+        Quaternion::From(axis, PI),-1.0);
+    // We need to rewrite any plane face entities to the transformed ones.
+    transd.RemapFaces(this, REMAP_TOP);
+
+    // Combine the transformed and original.
+    if (forWhat == CombineAs::ASSEMBLE) {
+        combined.MakeFromAssemblyOf(&original, &transd);
+    } else {
+        combined.MakeFromUnionOf(&original, &transd);
+    }
+
+    original.Clear();
+    transd.Clear();
+    *outs = combined;
+}
+
+template<class T>
 void Group::GenerateForBoolean(T *prevs, T *thiss, T *outs, Group::CombineAs how) {
     // If this group contributes no new mesh, then our running mesh is the
     // same as last time, no combining required. Likewise if we have a mesh
@@ -221,7 +248,8 @@ void Group::GenerateShellAndMesh() {
     // Don't attempt a lathe or extrusion unless the source section is good:
     // planar and not self-intersecting.
     bool haveSrc = true;
-    if(type == Type::EXTRUDE || type == Type::LATHE || type == Type::REVOLVE) {
+    if(type == Type::EXTRUDE || type == Type::LATHE || type == Type::REVOLVE
+        || type == Type::MIRROR) {
         Group *src = SK.GetGroup(opA);
         if(src->polyError.how != PolyError::GOOD) {
             haveSrc = false;
@@ -387,6 +415,38 @@ void Group::GenerateShellAndMesh() {
 
         thisShell.MakeFromTransformationOf(&impShell, offset, q, scale);
         thisShell.RemapFaces(this, 0);
+    } else if(type == Type::MIRROR && haveSrc) {
+        // A mirror gets merged against the group's previous group,
+        // not our own previous group.
+        srcg = SK.GetGroup(opA);
+
+        if(!srcg->suppress) {
+            if(!IsForcedToMesh()) {
+                GenerateForMirror<SShell>(&(srcg->thisShell), &thisShell, srcg->meshCombine);
+            } else {
+                SMesh prevm = {};
+                prevm.MakeFromCopyOf(&srcg->thisMesh);
+                srcg->thisShell.TriangulateInto(&prevm);
+                GenerateForMirror<SMesh>(&prevm, &thisMesh, srcg->meshCombine);
+            }
+        }
+/*
+        Vector offset = {
+            SK.GetParam(h.param(0))->val,
+            SK.GetParam(h.param(1))->val,
+            SK.GetParam(h.param(2))->val };
+        Quaternion q = { 0.0,
+            SK.GetParam(h.param(0))->val,
+            SK.GetParam(h.param(1))->val,
+            SK.GetParam(h.param(2))->val };
+        thisMesh.MakeFromTransformationOf(&impMesh, offset.ScaledBy(
+            SK.GetParam(h.param(3))->val * 2), q, -1.0);
+        thisMesh.RemapFaces(this, 0);
+
+        thisShell.MakeFromTransformationOf(&impShell, offset.ScaledBy(
+            SK.GetParam(h.param(3))->val * 2), q, -1.0);
+        thisShell.RemapFaces(this, 0);
+*/
     }
 
     if(srcg->meshCombine != CombineAs::ASSEMBLE) {
