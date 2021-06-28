@@ -620,6 +620,42 @@ public:
 
 };
 
+// Uniform API for FindIndex
+template<typename ContainerType, typename ValueType>
+inline int FindIndex(const ContainerType &container, const ValueType &val) {
+    using std::begin;
+    using std::end;
+    const auto b = begin(container);
+    const auto e = end(container);
+    auto it      = std::find(b, e, val);
+    if(it == e) {
+        // Not found, so return negative to indicate that.
+        return -1;
+    }
+    return std::distance(b, it);
+}
+// Overload for IdList.
+template<typename ValueType, typename HandleType>
+inline int FindIndex(const IdList<ValueType, HandleType> &container, const HandleType &handle) {
+    return container.IndexOf(handle);
+}
+
+// Uniform API for FindIndexIf
+template<typename ContainerType, typename PredType>
+inline int FindIndexIf(const ContainerType &container, PredType &&predicate) {
+    using std::begin;
+    using std::end;
+    const auto b = begin(container);
+    const auto e = end(container);
+    auto it      = std::find_if(b, e, std::forward<PredType &&>(predicate));
+    if(it == e) {
+        // Not found, so return negative to indicate that.
+        return -1;
+    }
+    return std::distance(b, it);
+}
+
+
 class BandedMatrix {
 public:
     enum {

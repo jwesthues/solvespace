@@ -1315,23 +1315,20 @@ public:
     }
 
     std::string GetExtension() {
-        auto filters = gtkChooser->list_filters();
-        size_t filterIndex =
-            std::find(filters.begin(), filters.end(), gtkChooser->get_filter()) -
-            filters.begin();
-        if(filterIndex < extensions.size()) {
+        auto filters    = gtkChooser->list_filters();
+        int filterIndex = FindIndex(filters, gtkChooser->get_filter());
+
+        if(filterIndex >= 0 && filterIndex < extensions.size()) {
             return extensions[filterIndex];
         } else {
             return extensions.front();
         }
     }
-
     void SetExtension(std::string extension) {
-        auto filters = gtkChooser->list_filters();
-        size_t extensionIndex =
-            std::find(extensions.begin(), extensions.end(), extension) -
-            extensions.begin();
-        if(extensionIndex < filters.size()) {
+        auto filters       = gtkChooser->list_filters();
+        int extensionIndex = FindIndex(extensions, extension);
+
+        if(extensionIndex >= 0 && extensionIndex < filters.size()) {
             gtkChooser->set_filter(filters[extensionIndex]);
         } else {
             gtkChooser->set_filter(filters.front());

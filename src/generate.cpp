@@ -140,25 +140,17 @@ void SolveSpaceUI::GenerateAll(Generate type, bool andFindFree, bool genForBBox)
         [](const hGroup &ha, const hGroup &hb) {
             return SK.GetGroup(ha)->order < SK.GetGroup(hb)->order;
         });
-
     switch(type) {
         case Generate::DIRTY: {
-            first = INT_MAX;
-            last  = 0;
-
             // Start from the first dirty group, and solve until the active group,
             // since all groups after the active group are hidden.
-            // Not using range-for because we're tracking the indices.
-            for(i = 0; i < SK.groupOrder.n; i++) {
-                Group *g = SK.GetGroup(SK.groupOrder[i]);
-                if((!g->clean) || !g->IsSolvedOkay()) {
-                    first = min(first, i);
-                }
-                if(g->h == SS.GW.activeGroup) {
-                    last = i;
-                }
-            }
-            if(first == INT_MAX || last == 0) {
+            first = FindIndexIf(SK.groupOrder, [](hGroup const &hg) {
+                Group *g = SK.GetGroup(hg);
+                return (!g->clean) || !g->IsSolvedOkay();
+            });
+            last  = FindIndex(SK.groupOrder, SS.GW.activeGroup);
+
+            if(first < 0 || last < 0) {
                 // All clean; so just regenerate the entities, and don't solve anything.
                 first = -1;
                 last  = -1;
@@ -179,13 +171,11 @@ void SolveSpaceUI::GenerateAll(Generate type, bool andFindFree, bool genForBBox)
             break;
 
         case Generate::UNTIL_ACTIVE: {
-            for(i = 0; i < SK.groupOrder.n; i++) {
-                if(SK.groupOrder[i] == SS.GW.activeGroup)
-                    break;
-            }
-
             first = 0;
-            last  = i;
+            last  = FindIndex(SK.groupOrder, SS.GW.activeGroup);
+            if(last < 0) {
+                last = SK.groupOrder.n;
+            }
             break;
         }
     }

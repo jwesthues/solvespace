@@ -319,15 +319,12 @@ void SurfaceRenderer::OutputInPaintOrder() {
         int   aZIndex = a.second,
               bZIndex = b.second;
 
-        size_t aLayerIndex =
-            std::find(std::begin(stackup), std::end(stackup), aLayer) - std::begin(stackup);
-        size_t bLayerIndex =
-            std::find(std::begin(stackup), std::end(stackup), bLayer) - std::begin(stackup);
+        auto aLayerIndex = FindIndex(stackup, aLayer);
+        auto bLayerIndex = FindIndex(stackup, bLayer);
         if(aLayerIndex == bLayerIndex) {
             return aZIndex < bZIndex;
-        } else {
-            return aLayerIndex < bLayerIndex;
         }
+        return aLayerIndex < bLayerIndex;
     });
 
     auto last = std::unique(paintOrder.begin(), paintOrder.end());

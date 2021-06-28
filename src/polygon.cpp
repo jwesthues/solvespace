@@ -307,17 +307,17 @@ int SEdgeList::AnyEdgeCrossings(Vector a, Vector b, Vector *ppi, SPointList *spl
 // an endpoint with one of our edges.
 //-----------------------------------------------------------------------------
 bool SEdgeList::ContainsEdgeFrom(const SEdgeList *sel) const {
-    for(const SEdge *se = l.First(); se; se = l.NextAfter(se)) {
-        if(sel->ContainsEdge(se)) return true;
-    }
-    return false;
+    auto i = FindIndexIf(l, [&](const SEdge &se) { return sel->ContainsEdge(&se); });
+    // did we find one?
+    return i >= 0;
 }
 bool SEdgeList::ContainsEdge(const SEdge *set) const {
-    for(const SEdge *se = l.First(); se; se = l.NextAfter(se)) {
-        if((se->a).Equals(set->a) && (se->b).Equals(set->b)) return true;
-        if((se->b).Equals(set->a) && (se->a).Equals(set->b)) return true;
-    }
-    return false;
+    auto i = FindIndexIf(l, [&](const SEdge &se) {
+        return ((se.a).Equals(set->a) && (se.b).Equals(set->b)) ||
+               ((se.b).Equals(set->a) && (se.a).Equals(set->b));
+    });
+    // did we find one?
+    return i >= 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -518,29 +518,19 @@ bool SPointList::ContainsPoint(Vector pt) const {
 }
 
 int SPointList::IndexForPoint(Vector pt) const {
-    int i;
-    for(i = 0; i < l.n; i++) {
-        const SPoint *p = &(l[i]);
-        if(pt.Equals(p->p)) {
-            return i;
-        }
-    }
-    // Not found, so return negative to indicate that.
-    return -1;
+    return FindIndexIf(l, [&](SPoint const &p) { return pt.Equals(p.p); });
 }
 
 void SPointList::IncrementTagFor(Vector pt) {
-    SPoint *p;
-    for(p = l.First(); p; p = l.NextAfter(p)) {
-        if(pt.Equals(p->p)) {
-            (p->tag)++;
-            return;
-        }
+    int i = IndexForPoint(pt);
+    if(i < 0) {
+        SPoint pa;
+        pa.p   = pt;
+        pa.tag = 1;
+        l.Add(&pa);
+    } else {
+        l[i].tag++;
     }
-    SPoint pa;
-    pa.p = pt;
-    pa.tag = 1;
-    l.Add(&pa);
 }
 
 void SPointList::Add(Vector pt) {

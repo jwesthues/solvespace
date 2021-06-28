@@ -924,15 +924,12 @@ struct CompareDrawCall {
             Canvas::Layer::FRONT
         };
 
-        int aLayerIndex =
-            std::find(std::begin(stackup), std::end(stackup), a->GetLayer()) - std::begin(stackup);
-        int bLayerIndex =
-            std::find(std::begin(stackup), std::end(stackup), b->GetLayer()) - std::begin(stackup);
+        int aLayerIndex = FindIndex(stackup, a->GetLayer());
+        int bLayerIndex = FindIndex(stackup, b->GetLayer());
         if(aLayerIndex == bLayerIndex) {
             return a->GetZIndex() < b->GetZIndex();
-        } else {
-            return aLayerIndex < bLayerIndex;
         }
+        return aLayerIndex < bLayerIndex;
     }
 };
 
