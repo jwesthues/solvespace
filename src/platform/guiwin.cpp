@@ -1709,6 +1709,10 @@ void RunGui() {
     while(GetMessage(&msg, NULL, 0, 0)) {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
+
+        // look for WM_TIMER to boost their priority
+        MSG timer_msg;
+        PeekMessage(&timer_msg, nullptr, WM_TIMER, WM_TIMER, PM_NOREMOVE);
     }
 }
 
