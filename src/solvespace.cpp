@@ -123,12 +123,8 @@ void SolveSpaceUI::Init() {
         SetLocale(locale);
     }
 
-    generateAllTimer = Platform::CreateTimer();
-    generateAllTimer->onTimeout = std::bind(&SolveSpaceUI::GenerateAll, &SS, Generate::DIRTY,
-                                            /*andFindFree=*/false, /*genForBBox=*/false);
-
-    showTWTimer = Platform::CreateTimer();
-    showTWTimer->onTimeout = std::bind(&TextWindow::Show, &TW);
+    refreshTimer = Platform::CreateTimer();
+    refreshTimer->onTimeout = std::bind(&SolveSpaceUI::Refresh, &SS);
 
     autosaveTimer = Platform::CreateTimer();
     autosaveTimer->onTimeout = std::bind(&SolveSpaceUI::Autosave, &SS);
@@ -300,12 +296,26 @@ void SolveSpaceUI::Exit() {
     Platform::ExitGui();
 }
 
+void SolveSpaceUI::Refresh() {
+    // generateAll must happen bfore updating displays
+    if(scheduledGenerateAll) {
+        GenerateAll(Generate::DIRTY, /*andFindFree=*/false, /*genForBBox=*/false);
+        scheduledGenerateAll = false;
+    }
+    if(scheduledShowTW) {
+        TW.Show();
+        scheduledShowTW = false;
+    }
+}
+
 void SolveSpaceUI::ScheduleGenerateAll() {
-    generateAllTimer->RunAfterProcessingEvents();
+    scheduledGenerateAll = true;
+    refreshTimer->RunAfterProcessingEvents();
 }
 
 void SolveSpaceUI::ScheduleShowTW() {
-    showTWTimer->RunAfterProcessingEvents();
+    scheduledShowTW = true;
+    refreshTimer->RunAfterProcessingEvents();
 }
 
 void SolveSpaceUI::ScheduleAutosave() {
