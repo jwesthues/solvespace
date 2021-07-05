@@ -74,6 +74,8 @@ void SolveSpaceUI::Init() {
     exportBackgroundColor = settings->ThawBool("ExportBackgroundColor", false);
     // Draw back faces of triangles (when mesh is leaky/self-intersecting)
     drawBackFaces = settings->ThawBool("DrawBackFaces", true);
+    // Use camera mouse navigation
+    cameraNav = settings->ThawBool("CameraNav", false);
     // Use turntable mouse navigation
     turntableNav = settings->ThawBool("TurntableNav", false);
     // Immediately edit dimension
@@ -260,6 +262,8 @@ void SolveSpaceUI::Exit() {
     settings->FreezeBool("ShowContourAreas", showContourAreas);
     // Check that contours are closed and not self-intersecting
     settings->FreezeBool("CheckClosedContour", checkClosedContour);
+    // Use camera mouse navigation
+    settings->FreezeBool("CameraNav", cameraNav);
     // Use turntable mouse navigation
     settings->FreezeBool("TurntableNav", turntableNav);
     // Immediately edit dimensions

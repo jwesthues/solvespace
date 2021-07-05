@@ -115,6 +115,10 @@ void TextWindow::ScreenChangeTurntableNav(int link, uint32_t v) {
     }
 }
 
+void TextWindow::ScreenChangeCameraNav(int link, uint32_t v) {
+    SS.cameraNav = !SS.cameraNav;
+}
+
 void TextWindow::ScreenChangeImmediatelyEditDimension(int link, uint32_t v) {
     SS.immediatelyEditDimension = !SS.immediatelyEditDimension;
     SS.GW.Invalidate(/*clearPersistent=*/true);
@@ -368,6 +372,8 @@ void TextWindow::ShowConfiguration() {
     Printf(false, "  %Fd%f%Ll%s  enable automatic line constraints%E",
         &ScreenChangeAutomaticLineConstraints,
         SS.automaticLineConstraints ? CHECK_TRUE : CHECK_FALSE);
+    Printf(false, "  %Fd%f%Ll%s  use camera mouse navigation%E", &ScreenChangeCameraNav,
+        SS.cameraNav ? CHECK_TRUE : CHECK_FALSE);
     Printf(false, "  %Fd%f%Ll%s  use turntable mouse navigation%E", &ScreenChangeTurntableNav,
         SS.turntableNav ? CHECK_TRUE : CHECK_FALSE);
     Printf(false, "  %Fd%f%Ll%s  edit newly added dimensions%E",
