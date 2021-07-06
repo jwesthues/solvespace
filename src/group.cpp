@@ -175,6 +175,23 @@ void Group::MenuGroup(Command id, Platform::Path linkFile) {
             g.name = C_("group-name", "extrude");
             break;
 
+        case Command::GROUP_MIRROR:
+            g.predef.entityB = SS.GW.ActiveWorkplane();
+/*
+            // If entities are selected we will constrain the mirror plane to them later
+            if(gs.points == 1 && gs.vectors == 1 && gs.n == 2) {
+                g.predef.origin = gs.point[0];
+                g.predef.entityB = gs.vector[0];
+            } else if(gs.lineSegments == 1 && gs.n == 1) {
+                g.predef.origin = SK.GetEntity(gs.entity[0])->point[0];
+                g.predef.entityB = gs.entity[0];
+            }
+*/
+            g.type = Type::MIRROR;
+            g.opA = SS.GW.activeGroup;
+            g.name = C_("group-name", "mirror");
+            break;
+
         case Command::GROUP_LATHE:
             if(!SS.GW.LockedInWorkplane()) {
                 Error(_("Lathe operation can only be applied to planar sketches."));
@@ -525,6 +542,38 @@ void Group::Generate(IdList<Entity,hEntity> *entity,
             return;
         }
 
+        case Type::MIRROR: {
+            // inherit meshCombine from source group
+            Group *srcg = SK.GetGroup(opA);
+            meshCombine = srcg->meshCombine;
+
+            Vector norm = gp.WithMagnitude(1.0);
+            AddParam(param, h.param(0), norm.x);
+            AddParam(param, h.param(1), norm.y);
+            AddParam(param, h.param(2), norm.z);
+            AddParam(param, h.param(3), 25.0);
+
+            // Not using range-for here because we're changing the size of entity in the loop.
+            for(i = 0; i < entity->n; i++) {
+                Entity *e = &(entity->Get(i));
+                if(e->group != opA) continue;
+
+                e->CalculateNumerical(/*forExport=*/false);
+                hEntity he = e->h;
+                // As soon as I call CopyEntity, e may become invalid! That
+                // adds entities, which may cause a realloc.
+                CopyEntity(entity, SK.GetEntity(he), 0, REMAP_BOTTOM,
+                    h.param(0), h.param(1), h.param(2),
+                    h.param(3), NO_PARAM, NO_PARAM, NO_PARAM, NO_PARAM,
+                    CopyAs::NUMERIC);
+                CopyEntity(entity, SK.GetEntity(he), 1, REMAP_TOP,
+                    h.param(0), h.param(1), h.param(2),
+                    h.param(3), NO_PARAM, NO_PARAM, NO_PARAM, NO_PARAM,
+                    CopyAs::MIRROR);
+            }
+            return;
+        }
+
         case Type::LATHE: {
             Vector axis_pos = SK.GetEntity(predef.origin)->PointGetNum();
             Vector axis_dir = SK.GetEntity(predef.entityB)->VectorGetNum();
@@ -828,7 +877,22 @@ void Group::GenerateEquations(IdList<Equation,hEquation> *l) {
             AddEq(l, u.Dot(extruden), 0);
             AddEq(l, v.Dot(extruden), 1);
         }
-    } else if(type == Type::TRANSLATE) {
+    } else if(type == Type::MIRROR) {
+        // Normalize the mirror normal
+        ExprVector n = {
+            Expr::From(h.param(0)),
+            Expr::From(h.param(1)),
+            Expr::From(h.param(2)) };
+        AddEq(l, (n.Magnitude())->Minus(Expr::From(1)), 0);
+
+        if (predef.entityB != Entity::FREE_IN_3D) {
+            // to reflect in plane, mirror normal must be perpendicular to the sketch normal
+            Entity *w = SK.GetEntity(predef.entityB);
+            ExprVector u = w->Normal()->NormalExprsU();
+            ExprVector v = w->Normal()->NormalExprsV();
+            AddEq(l, (n.Dot(u.Cross(v))), 1);
+        }
+     } else if(type == Type::TRANSLATE) {
         if(predef.entityB != Entity::FREE_IN_3D) {
             Entity *w = SK.GetEntity(predef.entityB);
             ExprVector n = w->Normal()->NormalExprsN();
@@ -1059,6 +1123,7 @@ void Group::CopyEntity(IdList<Entity,hEntity> *el,
         case Entity::Type::POINT_N_ROT_TRANS:
         case Entity::Type::POINT_N_ROT_AA:
         case Entity::Type::POINT_N_ROT_AXIS_TRANS:
+        case Entity::Type::POINT_MIRROR:
         case Entity::Type::POINT_IN_3D:
         case Entity::Type::POINT_IN_2D:
             if(as == CopyAs::N_TRANS) {
@@ -1068,6 +1133,12 @@ void Group::CopyEntity(IdList<Entity,hEntity> *el,
                 en.param[2] = dz;
             } else if(as == CopyAs::NUMERIC) {
                 en.type = Entity::Type::POINT_N_COPY;
+            } else if(as == CopyAs::MIRROR) {
+                en.type = Entity::Type::POINT_MIRROR;
+                en.param[0] = dx;
+                en.param[1] = dy;
+                en.param[2] = dz;
+                en.param[3] = qw;
             } else {
                 if(as == CopyAs::N_ROT_AA) {
                     en.type = Entity::Type::POINT_N_ROT_AA;
@@ -1093,10 +1164,17 @@ void Group::CopyEntity(IdList<Entity,hEntity> *el,
         case Entity::Type::NORMAL_N_COPY:
         case Entity::Type::NORMAL_N_ROT:
         case Entity::Type::NORMAL_N_ROT_AA:
+        case Entity::Type::NORMAL_MIRROR:
         case Entity::Type::NORMAL_IN_3D:
         case Entity::Type::NORMAL_IN_2D:
             if(as == CopyAs::N_TRANS || as == CopyAs::NUMERIC) {
                 en.type = Entity::Type::NORMAL_N_COPY;
+            } else if (as == CopyAs::MIRROR) {
+                en.type = Entity::Type::NORMAL_MIRROR;
+                en.param[0] = dx;
+                en.param[1] = dy;
+                en.param[2] = dz;
+                en.param[3] = qw;
             } else {  // N_ROT_AXIS_TRANS probably doesn't warrant a new entity Type
                 if(as == CopyAs::N_ROT_AA || as == CopyAs::N_ROT_AXIS_TRANS) {
                     en.type = Entity::Type::NORMAL_N_ROT_AA;
@@ -1126,6 +1204,7 @@ void Group::CopyEntity(IdList<Entity,hEntity> *el,
         case Entity::Type::FACE_N_TRANS:
         case Entity::Type::FACE_N_ROT_AA:
         case Entity::Type::FACE_ROT_NORMAL_PT:
+        case Entity::Type::FACE_MIRROR:
         case Entity::Type::FACE_N_ROT_AXIS_TRANS:
             if(as == CopyAs::N_TRANS) {
                 en.type = Entity::Type::FACE_N_TRANS;
@@ -1134,6 +1213,12 @@ void Group::CopyEntity(IdList<Entity,hEntity> *el,
                 en.param[2] = dz;
             } else if (as == CopyAs::NUMERIC) {
                 en.type = Entity::Type::FACE_NORMAL_PT;
+            } else if (as == CopyAs::MIRROR) {
+                en.type = Entity::Type::FACE_MIRROR;
+                en.param[0] = dx;
+                en.param[1] = dy;
+                en.param[2] = dz;
+                en.param[3] = qw;
             } else if (as == CopyAs::N_ROT_AXIS_TRANS) {
                 en.type = Entity::Type::FACE_N_ROT_AXIS_TRANS;
                 en.param[0] = dx;

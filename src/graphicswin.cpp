@@ -115,6 +115,7 @@ const MenuEntry Menu[] = {
 { 1, N_("&Helix"),                      Command::GROUP_HELIX,      S|'h',   KN, mGrp   },
 { 1, N_("&Lathe"),                      Command::GROUP_LATHE,      S|'l',   KN, mGrp   },
 { 1, N_("Re&volve"),                    Command::GROUP_REVOLVE,    S|'v',   KN, mGrp   },
+{ 1, N_("&Mirror"),                     Command::GROUP_MIRROR ,    S|'m',   KN, mGrp   },
 { 1, NULL,                              Command::NONE,             0,       KN, NULL   },
 { 1, N_("Link / Assemble..."),          Command::GROUP_LINK,       S|'i',   KN, mGrp   },
 { 1, N_("Link Recent"),                 Command::GROUP_RECENT,     0,       KN, mGrp   },
