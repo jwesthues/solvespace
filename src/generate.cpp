@@ -548,8 +548,11 @@ void SolveSpaceUI::SolveGroup(hGroup hg, bool andFindFree) {
 }
 
 SolveResult SolveSpaceUI::TestRankForGroup(hGroup hg, int *rank) {
-    WriteEqSystemForGroup(hg);
     Group *g = SK.GetGroup(hg);
+    // If we don't calculate dof or redundant is allowed, there is
+    // no point to solve rank because this result is not meaningful
+    if(g->suppressDofCalculation || g->allowRedundant) return SolveResult::OKAY;
+    WriteEqSystemForGroup(hg);
     SolveResult result = sys.SolveRank(g, rank);
     FreeAllTemporary();
     return result;

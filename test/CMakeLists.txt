@@ -126,6 +126,10 @@ set(debugtool_SOURCES
     debugtool.cpp
 )
 
+if (ENABLE_OPENMP)
+    include_directories(${OpenMP_CXX_INCLUDE_DIRS})
+endif()
+
 add_executable(solvespace-debugtool
     ${debugtool_SOURCES}
     $<TARGET_PROPERTY:resources,EXTRA_SOURCES>)

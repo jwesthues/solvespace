@@ -221,10 +221,6 @@ default: dbp("bad constraint type %d", sc->type); return;
         case SolveResult::REDUNDANT_OKAY:
             ssys->result = SLVS_RESULT_INCONSISTENT;
             break;
-
-        case SolveResult::TOO_MANY_UNKNOWNS:
-            ssys->result = SLVS_RESULT_TOO_MANY_UNKNOWNS;
-            break;
     }
 
     // Write the new parameter values back to our caller.

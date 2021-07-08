@@ -7,4 +7,4 @@ sudo apt-get install -q -y \
   libfontconfig1-dev libgtkmm-3.0-dev libpangomm-1.4-dev libgl-dev \
   libgl-dev libglu-dev libspnav-dev 
 
-git submodule update --init extlib/libdxfrw extlib/mimalloc
+git submodule update --init extlib/libdxfrw extlib/mimalloc extlib/libeigen

@@ -67,6 +67,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         # GCC 4.8/4.9 ship with broken but present <regex>. meh.
         message(FATAL_ERROR "GCC 5.0+ is required")
     endif()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-var-tracking-assignments")
 endif()
 
 # common compiler flags
@@ -172,6 +173,9 @@ endif()
 
 message(STATUS "Using in-tree libdxfrw")
 add_subdirectory(extlib/libdxfrw)
+
+message(STATUS "Using in-tree eigen")
+include_directories(extlib/libeigen)
 
 message(STATUS "Using in-tree mimalloc")
 set(MI_OVERRIDE OFF CACHE BOOL "")

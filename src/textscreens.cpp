@@ -254,6 +254,8 @@ void TextWindow::ScreenChangeGroupOption(int link, uint32_t v) {
 
         case 'e': g->allowRedundant = !(g->allowRedundant); break;
 
+        case 'D': g->suppressDofCalculation = !(g->suppressDofCalculation); break;
+
         case 'v': g->visible = !(g->visible); break;
 
         case 'd': g->allDimsReference = !(g->allDimsReference); break;
@@ -467,6 +469,10 @@ void TextWindow::ShowGroupInfo() {
         &TextWindow::ScreenChangeGroupOption,
         g->allowRedundant ? CHECK_TRUE : CHECK_FALSE);
 
+    Printf(false, " %f%LD%Fd%s  suppress dof calculation (improves solver performance)",
+        &TextWindow::ScreenChangeGroupOption,
+        g->suppressDofCalculation ? CHECK_TRUE : CHECK_FALSE);
+
     Printf(false, " %f%Ld%Fd%s  treat all dimensions as reference",
         &TextWindow::ScreenChangeGroupOption,
         g->allDimsReference ? CHECK_TRUE : CHECK_FALSE);
@@ -558,10 +564,6 @@ void TextWindow::ShowGroupSolveInfo() {
             Printf(true, "%FxSOLVE FAILED!%Fd redundant constraints");
             Printf(true, "remove any one of these to fix it");
             break;
-
-        case SolveResult::TOO_MANY_UNKNOWNS:
-            Printf(true, "Too many unknowns in a single group!");
-            return;
 
         default: ssassert(false, "Unexpected solve result");
     }

@@ -55,6 +55,7 @@ target_include_directories(slvs
 
 target_link_libraries(slvs
     ${util_LIBRARIES}
+    ${OpenMP_CXX_LIBRARIES}
     mimalloc-static)
 
 add_dependencies(slvs
@@ -217,12 +218,12 @@ add_dependencies(solvespace-core
     mimalloc-static)
 
 target_link_libraries(solvespace-core
-    ${OpenMP_CXX_LIBRARIES}
     dxfrw
     ${util_LIBRARIES}
     ${ZLIB_LIBRARY}
     ${PNG_LIBRARY}
     ${FREETYPE_LIBRARY}
+    ${OpenMP_CXX_LIBRARIES}
     mimalloc-static)
 
 if(Backtrace_FOUND)

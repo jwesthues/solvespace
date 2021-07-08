@@ -23,3 +23,6 @@
 [submodule "extlib/mimalloc"]
 	path = extlib/mimalloc
 	url = https://github.com/microsoft/mimalloc
+[submodule "extlib/libeigen"]
+	path = extlib/libeigen
+	url = https://gitlab.com/libeigen/eigen.git

@@ -45,7 +45,7 @@ parts:
       snapcraftctl set-version "$version"
       git describe --exact-match HEAD && grade="stable" || grade="devel"
       snapcraftctl set-grade "$grade"
-      git submodule update --init extlib/libdxfrw extlib/mimalloc
+      git submodule update --init extlib/libdxfrw extlib/mimalloc extlib/libeigen
     configflags:
       - -DCMAKE_INSTALL_PREFIX=/usr
       - -DCMAKE_BUILD_TYPE=Release

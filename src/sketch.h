@@ -175,6 +175,7 @@ public:
     bool        suppress;
     bool        relaxConstraints;
     bool        allowRedundant;
+    bool        suppressDofCalculation;
     bool        allDimsReference;
     double      scale;
 
@@ -615,7 +616,7 @@ public:
     bool        free;
 
     // Used only in the solver
-    hParam      substd;
+    Param       *substd;
 
     static const hParam NO_PARAM;
 
