@@ -177,6 +177,8 @@ public:
     bool        allowRedundant;
     bool        allDimsReference;
     double      scale;
+    bool        explode;
+    double      explodeDistance;
 
     bool        clean;
     bool        dofCheckOk;
@@ -326,6 +328,7 @@ public:
     void DrawPolyError(Canvas *canvas);
     void DrawFilledPaths(Canvas *canvas);
     void DrawContourAreaLabels(Canvas *canvas);
+    bool ShouldDrawExploded() const;
 
     SPolygon GetPolygon();
 
@@ -371,6 +374,7 @@ public:
     std::string font;
     Platform::Path file;
     double      aspectRatio;
+    int groupRequestIndex;
 
     static hParam AddParam(ParamList *param, hParam hp);
     void Generate(EntityList *entity, ParamList *param);
@@ -594,6 +598,10 @@ public:
         beziers.l.Clear();
         edges.l.Clear();
     }
+
+    bool ShouldDrawExploded() const;
+    Vector ExplodeOffset() const;
+    Vector PointGetDrawNum() const;
 };
 
 class EntReqTable {
@@ -763,7 +771,7 @@ public:
                       Vector p0, Vector p1, Vector pt, double salient);
     void DoArcForAngle(Canvas *canvas, Canvas::hStroke hcs,
                        Vector a0, Vector da, Vector b0, Vector db,
-                       Vector offset, Vector *ref, bool trim);
+                       Vector offset, Vector *ref, bool trim, Vector explodeOffset);
     void DoArrow(Canvas *canvas, Canvas::hStroke hcs,
                  Vector p, Vector dir, Vector n, double width, double angle, double da);
     void DoLineWithArrows(Canvas *canvas, Canvas::hStroke hcs,
@@ -784,6 +792,8 @@ public:
                             hEntity he, Vector *refp);
 
     std::string DescriptionString() const;
+
+    bool ShouldDrawExploded() const;
 
     static hConstraint AddConstraint(Constraint *c, bool rememberForUndo = true);
     static void MenuConstrain(Command id);
