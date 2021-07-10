@@ -1,0 +1,3 @@
+include pyproject.toml setup.cfg
+include README.md
+recursive-include . *.h *.c

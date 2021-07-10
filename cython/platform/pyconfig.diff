@@ -1,0 +1,15 @@
+--- pyconfig.h	2016-01-27 10:54:56.000000000 +0300
++++ pyconfig.h	2016-03-28 11:46:48.000000000 +0300
+@@ -100,6 +100,12 @@
+ 
+ /* Compiler specific defines */
+ 
++#ifdef __MINGW32__
++#ifdef _WIN64
++#define MS_WIN64
++#endif
++#endif
++
+ /* ------------------------------------------------------------------------*/
+ /* Microsoft C defines _MSC_VER */
+ #ifdef _MSC_VER
