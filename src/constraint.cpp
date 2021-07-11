@@ -201,7 +201,6 @@ void Constraint::MenuConstrain(Command id) {
 
     SS.GW.GroupSelection();
     auto const &gs = SS.GW.gs;
-
     switch(id) {
         case Command::DISTANCE_DIA:
         case Command::REF_DISTANCE: {
@@ -266,11 +265,20 @@ void Constraint::MenuConstrain(Command id) {
             break;
         }
 
-        case Command::ON_ENTITY:
-            if(gs.points == 2 && gs.n == 2) {
-                c.type = Type::POINTS_COINCIDENT;
-                c.ptA = gs.point[0];
-                c.ptB = gs.point[1];
+        case Command::ON_ENTITY: {
+            bool dontAddConstraint = false;
+            if(gs.points % 2 == 0) {
+                dontAddConstraint = true;
+                for (int i = 0; i < gs.points / 2; i++) {
+                    Constraint c = {};
+                    c.group = SS.GW.activeGroup;
+                    c.workplane = SS.GW.ActiveWorkplane();
+                    c.type = Type::POINTS_COINCIDENT;
+                    int doubleI = i * 2;
+                    c.ptA = gs.point[doubleI];
+                    c.ptB = gs.point[doubleI + 1];
+                    AddConstraint(&c, i == 0);
+                }
             } else if(gs.points == 1 && gs.workplanes == 1 && gs.n == 2) {
                 c.type = Type::PT_IN_PLANE;
                 c.ptA = gs.point[0];
@@ -297,14 +305,24 @@ void Constraint::MenuConstrain(Command id) {
                         "    * a point and a plane face (point on face)\n"));
                 return;
             }
-            AddConstraint(&c);
+            if (!dontAddConstraint) {
+                AddConstraint(&c);
+            }
             break;
-
-        case Command::EQUAL:
-            if(gs.lineSegments == 2 && gs.n == 2) {
-                c.type = Type::EQUAL_LENGTH_LINES;
-                c.entityA = gs.entity[0];
-                c.entityB = gs.entity[1];
+        }
+        case Command::EQUAL: {
+            bool dontAddConstraint = false;
+            if(gs.n == gs.lineSegments) {
+                dontAddConstraint = true;
+                for (int i = 0; i < gs.lineSegments - 1; i++) {
+                    Constraint c = {};
+                    c.group = SS.GW.activeGroup;
+                    c.workplane = SS.GW.ActiveWorkplane();
+                    c.type = Type::EQUAL_LENGTH_LINES;
+                    c.entityA = gs.entity[i];
+                    c.entityB = gs.entity[i + 1];
+                    AddConstraint(&c, i == 0);
+                }
             } else if(gs.lineSegments == 2 && gs.points == 2 && gs.n == 4) {
                 c.type = Type::EQ_PT_LN_DISTANCES;
                 c.entityA = gs.entity[0];
@@ -336,10 +354,17 @@ void Constraint::MenuConstrain(Command id) {
                 c.entityB = gs.vector[1];
                 c.entityC = gs.vector[1];
                 c.entityD = gs.vector[2];
-            } else if(gs.circlesOrArcs == 2 && gs.n == 2) {
-                c.type = Type::EQUAL_RADIUS;
-                c.entityA = gs.entity[0];
-                c.entityB = gs.entity[1];
+            } else if(gs.n == gs.circlesOrArcs) {
+                dontAddConstraint = true;
+                for (int i = 0; i < gs.circlesOrArcs - 1; i++) {
+                    Constraint c = {};
+                    c.group = SS.GW.activeGroup;
+                    c.workplane = SS.GW.ActiveWorkplane();
+                    c.type = Type::EQUAL_RADIUS;
+                    c.entityA = gs.entity[i];
+                    c.entityB = gs.entity[i + 1];
+                    AddConstraint(&c);
+                }
             } else if(gs.arcs == 1 && gs.lineSegments == 1 && gs.n == 2) {
                 c.type = Type::EQUAL_LINE_ARC_LEN;
                 if(SK.GetEntity(gs.entity[0])->type == Entity::Type::ARC_OF_CIRCLE) {
@@ -380,9 +405,11 @@ void Constraint::MenuConstrain(Command id) {
                     c.other = true;
                 }
             }
-            AddConstraint(&c);
+            if (!dontAddConstraint) {
+                AddConstraint(&c);
+            }
             break;
-
+        }
         case Command::RATIO:
             if(gs.lineSegments == 2 && gs.n == 2) {
                 c.type = Type::LENGTH_RATIO;
@@ -574,20 +601,32 @@ void Constraint::MenuConstrain(Command id) {
 
         case Command::VERTICAL:
         case Command::HORIZONTAL: {
-            hEntity ha, hb;
             if(c.workplane == Entity::FREE_IN_3D) {
                 Error(_("Activate a workplane (with Sketch -> In Workplane) before "
                         "applying a horizontal or vertical constraint."));
                 return;
             }
-            if(gs.lineSegments == 1 && gs.n == 1) {
-                c.entityA = gs.entity[0];
-                Entity *e = SK.GetEntity(c.entityA);
-                ha = e->point[0];
-                hb = e->point[1];
-            } else if(gs.points == 2 && gs.n == 2) {
-                ha = c.ptA = gs.point[0];
-                hb = c.ptB = gs.point[1];
+            if(gs.lineSegments == gs.n) {
+                for (int i = 0; i < gs.lineSegments; i++) {
+                    Constraint c = {};
+                    c.group = SS.GW.activeGroup;
+                    c.workplane = SS.GW.ActiveWorkplane();
+                    c.type = id == Command::HORIZONTAL ? Type::HORIZONTAL : Type::VERTICAL;
+                    c.entityA = gs.entity[i];
+                    DeleteAllConstraintsFor(c.type, gs.entity[i], Entity::NO_ENTITY);
+                    AddConstraint(&c, i == 0);
+                }
+            } else if(gs.points % 2 == 0 && gs.n == gs.points) {
+                for (int i = 0; i < gs.points / 2; i++) {
+                    Constraint c = {};
+                    c.group = SS.GW.activeGroup;
+                    c.workplane = SS.GW.ActiveWorkplane();
+                    c.type = id == Command::HORIZONTAL ? Type::HORIZONTAL : Type::VERTICAL;
+                    int doubleI = i * 2;
+                    c.ptA = gs.point[doubleI];
+                    c.ptB = gs.point[doubleI + 1];
+                    AddConstraint(&c, i == 0);
+                }
             } else {
                 Error(_("Bad selection for horizontal / vertical constraint. "
                         "This constraint can apply to:\n\n"
@@ -595,12 +634,6 @@ void Constraint::MenuConstrain(Command id) {
                         "    * a line segment\n"));
                 return;
             }
-            if(id == Command::HORIZONTAL) {
-                c.type = Type::HORIZONTAL;
-            } else {
-                c.type = Type::VERTICAL;
-            }
-            AddConstraint(&c);
             break;
         }
 
